@@ -12,7 +12,7 @@ export default function MediaCard({ config, onEdit, onDelete }) {
 
   const renderPreview = () => {
     if (!config.mediaUrl) {
-      return <div className="no-media">🎬</div>;
+      return <div className="no-media">No Media</div>;
     }
     if (config.mediaType === 'video') {
       return <video src={config.mediaUrl} muted loop style={{ maxWidth: '100%', maxHeight: '100%' }} />;
@@ -31,9 +31,9 @@ export default function MediaCard({ config, onEdit, onDelete }) {
         {renderPreview()}
         <div className="preview-play-overlay">
           {triggered ? (
-            <span className="trigger-flash">✨ Triggered!</span>
+            <span className="trigger-flash">Triggered!</span>
           ) : (
-            <span className="play-icon-circle">▶</span>
+            <span className="play-icon-circle">Play</span>
           )}
         </div>
       </div>
@@ -42,17 +42,17 @@ export default function MediaCard({ config, onEdit, onDelete }) {
           {config.title || config.fileName}
         </div>
         <div className="card-meta">
-          <span>🎭 {config.animationIn}</span>
-          <span>⏱️ {config.duration}s</span>
-          <span>📐 {config.scale}%</span>
-          {config.sfxUrl && <span>🔊 SFX</span>}
+          <span>Animation: {config.animationIn}</span>
+          <span>Time: {config.duration}s</span>
+          <span>Scale: {config.scale}%</span>
+          {config.sfxUrl && <span>Sound: SFX</span>}
         </div>
         <div className="card-actions">
           <button className="btn btn-edit" onClick={() => onEdit(config)}>
-            ✏️ Edit
+            Edit
           </button>
           <button className="btn btn-delete" onClick={() => onDelete(config.id)}>
-            🗑️ Delete
+            Delete
           </button>
         </div>
       </div>

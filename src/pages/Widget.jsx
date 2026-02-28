@@ -158,7 +158,7 @@ export default function Widget() {
           justifyContent: 'center',
           animationDuration: `${animDuration}s`,
           animationFillMode: 'both',
-          animationTimingFunction: 'ease-out',
+          animationTimingFunction: 'ease-in-out',
         }}
       >
         {activeMedia.mediaType === 'video' ? (

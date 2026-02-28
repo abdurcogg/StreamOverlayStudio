@@ -72,7 +72,7 @@ export default function Dashboard() {
     return (
       <div className="dashboard" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center', background: 'var(--bg-card)', padding: '40px', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-color)' }}>
-          <h1 style={{ fontSize: 24, marginBottom: 16 }}>🎮 Stream Overlay Studio</h1>
+          <h1 style={{ fontSize: 24, marginBottom: 16 }}>Stream Overlay Studio</h1>
           <p style={{ color: 'var(--text-secondary)', marginBottom: 32 }}>Manage your OBS overlays and trigger them from anywhere (like a Stream Deck).</p>
           <button className="btn btn-primary" onClick={handleLogin} style={{ padding: '12px 24px', fontSize: 16 }}>
             Sign in with Google
@@ -142,36 +142,35 @@ export default function Dashboard() {
       {/* Header */}
       <div className="dashboard-header">
         <div>
-          <h1>🎮 Stream Overlay Studio</h1>
+          <h1>Stream Overlay Studio</h1>
           <div className="subtitle">Logged in as {session.user.email} &bull; <button className="btn-ghost" onClick={handleLogout} style={{ border: 'none', cursor: 'pointer', padding: 0 }}>Logout</button></div>
         </div>
         <button className="btn btn-primary" onClick={() => { setEditingConfig(null); setShowModal(true); }}>
-          ✨ Add Media
+          Add Media
         </button>
       </div>
 
       {loadingText && (
         <div style={{ textAlign: 'center', padding: '10px', color: 'var(--accent-cyan)', background: 'var(--accent-cyan-dim)', borderRadius: 'var(--radius-sm)', marginBottom: 20 }}>
-          ⏳ {loadingText}
+          {loadingText}
         </div>
       )}
 
       {/* Widget URL Bar */}
       <div className="widget-url-bar">
-        <div className="label">📡 OBS Widget URL</div>
+        <div className="label">OBS Widget URL</div>
         <div className="url-text">{widgetUrl}</div>
         <button
           className={`btn btn-copy ${copied ? 'copied' : ''}`}
           onClick={handleCopy}
         >
-          {copied ? '✅ Copied!' : '📋 Copy URL'}
+          {copied ? 'Copied!' : 'Copy URL'}
         </button>
       </div>
 
       {/* Media Grid */}
       {configs.length === 0 && !loadingText ? (
         <div className="empty-state">
-          <div className="emoji">🎬</div>
           <p>No media configured yet. Click <strong>"Add Media"</strong> to get started!</p>
         </div>
       ) : null}

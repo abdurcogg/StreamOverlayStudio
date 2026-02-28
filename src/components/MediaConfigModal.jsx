@@ -107,7 +107,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
     <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="modal">
         <div className="modal-header">
-          <h2>{config?.id ? '⚙️ Edit Media' : '➕ Add New Media'}</h2>
+          <h2>{config?.id ? 'Edit Media' : 'Add New Media'}</h2>
           <button className="close-btn" onClick={onClose}>✕</button>
         </div>
 
@@ -123,7 +123,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
                 }
               </div>
               <div className="file-name-text">
-                📁 {form.fileName}
+                {form.fileName}
                 {form.naturalWidth > 0 && (
                   <span style={{ marginLeft: 8, color: 'var(--accent-cyan)' }}>
                     ({form.naturalWidth}×{form.naturalHeight}px)
@@ -140,7 +140,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
             </>
           ) : (
             <div className="form-group">
-              <label className="form-label">📂 Upload Media (Image / Video / GIF)</label>
+              <label className="form-label">Upload Media (Image / Video / GIF)</label>
               <input
                 type="file"
                 accept="image/*,video/*"
@@ -153,7 +153,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
 
           {/* Title Input */}
           <div className="form-group" style={{ marginTop: '16px' }}>
-            <label className="form-label">📝 Media Title</label>
+            <label className="form-label">Media Title</label>
             <input
               type="text"
               className="form-input"
@@ -165,11 +165,11 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
 
           {/* SFX Sound Upload */}
           <div className="form-group sfx-section">
-            <label className="form-label">🔊 Sound Effect (SFX) — plays when overlay appears</label>
+            <label className="form-label">Sound Effect (SFX) — plays when overlay appears</label>
             {form.sfxUrl ? (
               <div className="sfx-preview">
                 <div className="sfx-info">
-                  <span className="sfx-name">🎵 {form.sfxFileName}</span>
+                  <span className="sfx-name">{form.sfxFileName}</span>
                   <button
                     className="btn btn-ghost"
                     style={{ padding: '4px 10px', fontSize: 11 }}
@@ -186,7 +186,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
                       a.play();
                     }}
                   >
-                    🔈 Test
+                    Test
                   </button>
                 </div>
                 <div style={{ marginTop: 8 }}>
@@ -218,7 +218,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
           {/* Animation Settings */}
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">🎭 Appear Animation</label>
+              <label className="form-label">Appear Animation</label>
               <select
                 className="form-select"
                 value={form.animationIn}
@@ -230,7 +230,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">🎭 Disappear Animation</label>
+              <label className="form-label">Disappear Animation</label>
               <select
                 className="form-select"
                 value={form.animationOut}
@@ -246,7 +246,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
           {/* Speed Sliders */}
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">⚡ Appear Speed</label>
+              <label className="form-label">Appear Speed</label>
               <div className="slider-container">
                 <input
                   type="range"
@@ -260,7 +260,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
               </div>
             </div>
             <div className="form-group">
-              <label className="form-label">⚡ Disappear Speed</label>
+              <label className="form-label">Disappear Speed</label>
               <div className="slider-container">
                 <input
                   type="range"
@@ -277,7 +277,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
 
           {/* Duration */}
           <div className="form-group">
-            <label className="form-label">⏱️ Duration / Auto-Hide (seconds)</label>
+            <label className="form-label">Duration / Auto-Hide (seconds)</label>
             <div className="slider-container">
               <input
                 type="range"
@@ -294,7 +294,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
           {/* Volume (for video) */}
           {(form.mediaType === 'video') && (
             <div className="form-group">
-              <label className="form-label">🔈 Media Volume</label>
+              <label className="form-label">Media Volume</label>
               <div className="slider-container">
                 <input
                   type="range"
@@ -323,7 +323,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
             onClick={handleSave}
             disabled={!form.mediaUrl}
           >
-            💾 Save Settings
+            Save Settings
           </button>
         </div>
       </div>

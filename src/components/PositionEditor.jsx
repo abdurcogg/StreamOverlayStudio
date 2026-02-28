@@ -82,7 +82,7 @@ export default function PositionEditor({ config, onChange }) {
 
   return (
     <div className="position-editor-container">
-      <div className="form-label">📍 Position (1920×1080)</div>
+      <div className="form-label">Position (1920×1080)</div>
 
       <div className="scale-presets">
         {scalePresets.map(s => (
