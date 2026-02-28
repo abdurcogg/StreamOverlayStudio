@@ -158,6 +158,7 @@ export default function Widget() {
       overflow: 'hidden',
     }}>
       <div
+        key={`${activeMedia.id}-${Date.now()}`}
         className={animClass}
         style={{
           position: 'absolute',
@@ -183,6 +184,7 @@ export default function Widget() {
               ref={videoRef}
               src={activeMedia.mediaUrl}
               autoPlay
+              playsInline
               loop
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />

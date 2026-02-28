@@ -15,7 +15,7 @@ export default function MediaCard({ config, onEdit, onDelete }) {
       return <div className="no-media">No Media</div>;
     }
     if (config.mediaType === 'video') {
-      return <video src={config.mediaUrl} muted loop style={{ maxWidth: '100%', maxHeight: '100%' }} />;
+      return <video src={config.mediaUrl} autoPlay playsInline muted loop style={{ maxWidth: '100%', maxHeight: '100%' }} />;
     }
     return <img src={config.mediaUrl} alt={config.fileName} />;
   };
@@ -29,13 +29,11 @@ export default function MediaCard({ config, onEdit, onDelete }) {
         title="Click to trigger overlay"
       >
         {renderPreview()}
-        <div className="preview-play-overlay">
-          {triggered ? (
-            <span className="trigger-flash">Triggered!</span>
-          ) : (
-            <span className="play-icon-circle">Play</span>
-          )}
-        </div>
+        {triggered && (
+          <div className="preview-trigger-flash">
+            Triggered!
+          </div>
+        )}
       </div>
       <div className="card-body">
         <div className="card-title" title={config.title || config.fileName}>
