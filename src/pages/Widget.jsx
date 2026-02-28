@@ -12,15 +12,20 @@ export default function Widget() {
   const [animClass, setAnimClass] = useState('');
   const [isVisible, setIsVisible] = useState(false);
   const hideTimerRef = useRef(null);
+  const outTimerRef = useRef(null);
   const videoRef = useRef(null);
   const sfxRef = useRef(null);
 
-  const clearTimers = () => {
+  const clearTimers = useCallback(() => {
     if (hideTimerRef.current) {
       clearTimeout(hideTimerRef.current);
       hideTimerRef.current = null;
     }
-  };
+    if (outTimerRef.current) {
+      clearTimeout(outTimerRef.current);
+      outTimerRef.current = null;
+    }
+  }, []);
 
   const showNewMedia = useCallback((config) => {
     clearTimers();
@@ -29,7 +34,6 @@ export default function Widget() {
     setAnimClass(`anim-${config.animationIn}`);
     setIsVisible(true);
 
-    // Play SFX if configured
     if (config.sfxUrl) {
       try {
         if (sfxRef.current) {
@@ -37,28 +41,29 @@ export default function Widget() {
           sfxRef.current = null;
         }
         const sfx = new Audio(config.sfxUrl);
-        sfx.volume = (config.sfxVolume ?? 80) / 100;
+        sfx.volume = (Number(config.sfxVolume) ?? 80) / 100;
         sfx.play().catch(() => {});
         sfxRef.current = sfx;
-      } catch {
-        // ignore audio errors
-      }
+      } catch {}
     }
 
-    // Auto-hide after duration
-    if (config.duration > 0) {
+    const durationNum = Number(config.duration);
+    if (durationNum > 0) {
+      console.log(`Setting auto-hide timer for ${durationNum} seconds...`);
       hideTimerRef.current = setTimeout(() => {
-        // Trigger out animation
+        console.log(`Auto-hide triggered. Starting out-animation: ${config.animationOut}`);
         setAnimClass(`anim-${config.animationOut}`);
 
-        setTimeout(() => {
+        const outSpeed = Number(config.animationOutSpeed) || 0.5;
+        outTimerRef.current = setTimeout(() => {
+          console.log(`Out-animation finished. Removing media from DOM.`);
           setIsVisible(false);
           setActiveMedia(null);
           setAnimClass('');
-        }, (config.animationOutSpeed || 0.5) * 1000);
-      }, config.duration * 1000);
+        }, outSpeed * 1000);
+      }, durationNum * 1000);
     }
-  }, []);
+  }, [clearTimers]);
 
   useEffect(() => {
     if (!userId) {
@@ -161,6 +166,7 @@ export default function Widget() {
             ref={videoRef}
             src={activeMedia.mediaUrl}
             autoPlay
+            loop
             style={{
               maxWidth: '100%',
               maxHeight: '100%',
