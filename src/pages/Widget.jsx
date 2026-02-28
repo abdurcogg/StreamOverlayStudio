@@ -1,9 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { onTrigger } from '../lib/channel';
-import { getMediaConfig } from '../lib/store';
+import { getMediaConfigById } from '../lib/store';
 import '../lib/animations.css';
 
 export default function Widget() {
+  const [searchParams] = useSearchParams();
+  const userId = searchParams.get('uid');
+
   const [activeMedia, setActiveMedia] = useState(null);
   const [animClass, setAnimClass] = useState('');
   const [isVisible, setIsVisible] = useState(false);
@@ -57,10 +61,15 @@ export default function Widget() {
   }, []);
 
   useEffect(() => {
-    const cleanup = onTrigger((data) => {
+    if (!userId) {
+      console.warn('OBS Widget: No uid parameter provided in URL');
+      return;
+    }
+
+    const cleanup = onTrigger(userId, async (data) => {
       if (data.type === 'TRIGGER_MEDIA' && data.mediaId) {
-        // Read the full config from localStorage using the ID
-        const config = getMediaConfig(data.mediaId);
+        // Fetch config from Supabase cloud via ID
+        const config = await getMediaConfigById(data.mediaId);
         if (config) {
           // If something is already showing, clear it first
           clearTimers();
@@ -89,7 +98,7 @@ export default function Widget() {
       cleanup();
       clearTimers();
     };
-  }, [showNewMedia]);
+  }, [showNewMedia, userId, activeMedia]);
 
   // Set video volume when activeMedia changes
   useEffect(() => {
@@ -97,6 +106,10 @@ export default function Widget() {
       videoRef.current.volume = (activeMedia.volume ?? 80) / 100;
     }
   }, [activeMedia]);
+
+  if (!userId) {
+    return <div style={{ color: 'red', margin: 20 }}>Error: Missing ?uid= parameter in URL. Copy the link from your Dashboard.</div>;
+  }
 
   if (!isVisible || !activeMedia) {
     return (
