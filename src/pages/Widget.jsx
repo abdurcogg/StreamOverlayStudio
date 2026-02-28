@@ -129,8 +129,20 @@ export default function Widget() {
   const scale = (activeMedia.scale || 100) / 100;
   const nw = activeMedia.naturalWidth || activeMedia.maxWidth || 400;
   const nh = activeMedia.naturalHeight || activeMedia.maxHeight || 400;
-  const dispW = nw * scale;
-  const dispH = nh * scale;
+
+  const cropT = activeMedia.crop?.top || 0;
+  const cropB = activeMedia.crop?.bottom || 0;
+  const cropL = activeMedia.crop?.left || 0;
+  const cropR = activeMedia.crop?.right || 0;
+
+  const croppedNw = nw * Math.max(0.01, 1 - (cropL + cropR) / 100);
+  const croppedNh = nh * Math.max(0.01, 1 - (cropT + cropB) / 100);
+
+  const dispW = croppedNw * scale;
+  const dispH = croppedNh * scale;
+
+  const innerW_Ratio = 100 / Math.max(0.01, 100 - cropL - cropR);
+  const innerH_Ratio = 100 / Math.max(0.01, 100 - cropT - cropB);
 
   const inSpeed = activeMedia.animationInSpeed || 0.5;
   const outSpeed = activeMedia.animationOutSpeed || 0.5;
@@ -153,37 +165,35 @@ export default function Widget() {
           top: `${pos.y}px`,
           width: `${dispW}px`,
           height: `${dispH}px`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          overflow: 'hidden',
           animationDuration: `${animDuration}s`,
           animationFillMode: 'both',
           animationTimingFunction: 'ease-in-out',
         }}
       >
-        {activeMedia.mediaType === 'video' ? (
-          <video
-            ref={videoRef}
-            src={activeMedia.mediaUrl}
-            autoPlay
-            loop
-            style={{
-              maxWidth: '100%',
-              maxHeight: '100%',
-              objectFit: 'contain',
-            }}
-          />
-        ) : (
-          <img
-            src={activeMedia.mediaUrl}
-            alt=""
-            style={{
-              maxWidth: '100%',
-              maxHeight: '100%',
-              objectFit: 'contain',
-            }}
-          />
-        )}
+        <div style={{
+          position: 'absolute',
+          width: `${innerW_Ratio * 100}%`,
+          height: `${innerH_Ratio * 100}%`,
+          left: `-${cropL * innerW_Ratio}%`,
+          top: `-${cropT * innerH_Ratio}%`,
+        }}>
+          {activeMedia.mediaType === 'video' ? (
+            <video
+              ref={videoRef}
+              src={activeMedia.mediaUrl}
+              autoPlay
+              loop
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          ) : (
+            <img
+              src={activeMedia.mediaUrl}
+              alt=""
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

@@ -10,11 +10,19 @@ export default function PositionEditor({ config, onChange }) {
 
   const pos = config.position || { x: 760, y: 340 };
   const scale = (config.scale || 100) / 100;
-  // Use natural media dimensions for the draggable box
   const nw = config.naturalWidth || config.maxWidth || 400;
   const nh = config.naturalHeight || config.maxHeight || 400;
-  const boxW = nw * scale;
-  const boxH = nh * scale;
+
+  const cropT = config.crop?.top || 0;
+  const cropB = config.crop?.bottom || 0;
+  const cropL = config.crop?.left || 0;
+  const cropR = config.crop?.right || 0;
+
+  const croppedNw = nw * Math.max(0.01, 1 - (cropL + cropR) / 100);
+  const croppedNh = nh * Math.max(0.01, 1 - (cropT + cropB) / 100);
+
+  const boxW = croppedNw * scale;
+  const boxH = croppedNh * scale;
 
   const getCanvasScale = () => {
     if (!canvasRef.current) return 1;
@@ -80,6 +88,9 @@ export default function PositionEditor({ config, onChange }) {
   const widthPct = (boxW / CANVAS_W) * 100;
   const heightPct = (boxH / CANVAS_H) * 100;
 
+  const innerW_Ratio = 100 / Math.max(0.01, 100 - cropL - cropR);
+  const innerH_Ratio = 100 / Math.max(0.01, 100 - cropT - cropB);
+
   return (
     <div className="position-editor-container">
       <div className="form-label">Position (1920×1080)</div>
@@ -124,13 +135,24 @@ export default function PositionEditor({ config, onChange }) {
             top: `${topPct}%`,
             width: `${widthPct}%`,
             height: `${heightPct}%`,
+            overflow: 'hidden',
           }}
           onMouseDown={handleMouseDown}
         >
           {config.mediaUrl && (
-            config.mediaType === 'video'
-              ? <video src={config.mediaUrl} muted style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', pointerEvents: 'none' }} />
-              : <img src={config.mediaUrl} alt="" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', pointerEvents: 'none' }} />
+            <div style={{
+              position: 'absolute',
+              width: `${innerW_Ratio * 100}%`,
+              height: `${innerH_Ratio * 100}%`,
+              left: `-${cropL * innerW_Ratio}%`,
+              top: `-${cropT * innerH_Ratio}%`,
+              pointerEvents: 'none'
+            }}>
+              {config.mediaType === 'video'
+                ? <video src={config.mediaUrl} muted style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                : <img src={config.mediaUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              }
+            </div>
           )}
         </div>
       </div>

@@ -13,6 +13,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
     animationInSpeed: 0.5,
     animationOutSpeed: 0.5,
     duration: 5,
+    crop: { top: 0, bottom: 0, left: 0, right: 0 },
     position: { x: 760, y: 340 },
     scale: 100,
     maxWidth: 400,
@@ -62,8 +63,14 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
     const reader = new FileReader();
     reader.onload = (ev) => {
       let mediaType = 'image';
-      if (file.type.startsWith('video/')) mediaType = 'video';
-      else if (file.name.endsWith('.gif')) mediaType = 'gif';
+      if (file.type.startsWith('video/')) {
+        mediaType = 'video';
+        if (file.size > 8 * 1024 * 1024) {
+          alert('Warning: Video size is over 8MB! For fast triggers, keeping short memes under 5MB is highly recommended.');
+        }
+      } else if (file.name.endsWith('.gif')) {
+        mediaType = 'gif';
+      }
 
       const url = ev.target.result;
       update({
@@ -116,11 +123,17 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
           {form.mediaUrl ? (
             <>
               <div className="form-label">Media Preview</div>
-              <div className="media-preview-box">
-                {form.mediaType === 'video'
-                  ? <video src={form.mediaUrl} controls muted style={{ maxWidth: '100%', maxHeight: '100%' }} />
-                  : <img src={form.mediaUrl} alt={form.fileName} />
-                }
+              <div className="media-preview-box" style={{ overflow: 'hidden' }}>
+                <div style={{
+                  width: '100%', height: '100%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  clipPath: `inset(${form.crop?.top || 0}% ${form.crop?.right || 0}% ${form.crop?.bottom || 0}% ${form.crop?.left || 0}%)`
+                }}>
+                  {form.mediaType === 'video'
+                    ? <video src={form.mediaUrl} controls muted style={{ maxWidth: '100%', maxHeight: '100%' }} />
+                    : <img src={form.mediaUrl} alt={form.fileName} />
+                  }
+                </div>
               </div>
               <div className="file-name-text">
                 {form.fileName}
@@ -162,6 +175,35 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
               placeholder="e.g. My Overlay"
             />
           </div>
+
+          {/* Crop Settings */}
+          {form.mediaUrl && (
+            <div className="form-group" style={{ marginTop: '16px', background: 'var(--bg-secondary)', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+              <label className="form-label" style={{ marginBottom: 12 }}>✂️ Crop Media (%)</label>
+              
+              <div className="form-row" style={{ gap: 12, marginBottom: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Top ({form.crop?.top || 0}%)</div>
+                  <input type="range" min="0" max="50" value={form.crop?.top || 0} onChange={(e) => update({ crop: { ...form.crop, top: Number(e.target.value) } })} style={{ width: '100%' }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Bottom ({form.crop?.bottom || 0}%)</div>
+                  <input type="range" min="0" max="50" value={form.crop?.bottom || 0} onChange={(e) => update({ crop: { ...form.crop, bottom: Number(e.target.value) } })} style={{ width: '100%' }} />
+                </div>
+              </div>
+
+              <div className="form-row" style={{ gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Left ({form.crop?.left || 0}%)</div>
+                  <input type="range" min="0" max="50" value={form.crop?.left || 0} onChange={(e) => update({ crop: { ...form.crop, left: Number(e.target.value) } })} style={{ width: '100%' }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Right ({form.crop?.right || 0}%)</div>
+                  <input type="range" min="0" max="50" value={form.crop?.right || 0} onChange={(e) => update({ crop: { ...form.crop, right: Number(e.target.value) } })} style={{ width: '100%' }} />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* SFX Sound Upload */}
           <div className="form-group sfx-section">
