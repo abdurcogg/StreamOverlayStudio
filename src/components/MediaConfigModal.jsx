@@ -4,6 +4,7 @@ import PositionEditor from './PositionEditor';
 
 export default function MediaConfigModal({ config, onSave, onClose }) {
   const [form, setForm] = useState({
+    title: '',
     mediaUrl: '',
     mediaType: 'image',
     fileName: '',
@@ -69,6 +70,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
         mediaUrl: url,
         mediaType,
         fileName: file.name,
+        title: file.name, // Auto-fill title with filename initially
       });
       detectMediaSize(url, mediaType);
     };
@@ -148,6 +150,18 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
               />
             </div>
           )}
+
+          {/* Title Input */}
+          <div className="form-group" style={{ marginTop: '16px' }}>
+            <label className="form-label">📝 Media Title</label>
+            <input
+              type="text"
+              className="form-input"
+              value={form.title || form.fileName}
+              onChange={(e) => update({ title: e.target.value })}
+              placeholder="e.g. My Overlay"
+            />
+          </div>
 
           {/* SFX Sound Upload */}
           <div className="form-group sfx-section">

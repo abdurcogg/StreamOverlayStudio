@@ -38,7 +38,9 @@ export default function MediaCard({ config, onEdit, onDelete }) {
         </div>
       </div>
       <div className="card-body">
-        <div className="card-title" title={config.fileName}>{config.fileName}</div>
+        <div className="card-title" title={config.title || config.fileName}>
+          {config.title || config.fileName}
+        </div>
         <div className="card-meta">
           <span>🎭 {config.animationIn}</span>
           <span>⏱️ {config.duration}s</span>

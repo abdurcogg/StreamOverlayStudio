@@ -68,37 +68,35 @@ export default function Widget() {
 
     const cleanup = onTrigger(userId, async (data) => {
       if (data.type === 'TRIGGER_MEDIA' && data.mediaId) {
-        // Fetch config from Supabase cloud via ID
         const config = await getMediaConfigById(data.mediaId);
         if (config) {
-          // If something is already showing, clear it first
           clearTimers();
           setIsVisible(false);
           setActiveMedia(null);
           setAnimClass('');
-
-          // Small delay before showing new one
-          setTimeout(() => {
-            showNewMedia(config);
-          }, 100);
+          setTimeout(() => showNewMedia(config), 100);
         }
       } else if (data.type === 'HIDE_MEDIA') {
-        if (activeMedia) {
-          setAnimClass(`anim-${activeMedia.animationOut}`);
-          setTimeout(() => {
-            setIsVisible(false);
-            setActiveMedia(null);
-            setAnimClass('');
-          }, (activeMedia?.animationOutSpeed || 0.5) * 1000);
-        }
+        setActiveMedia(current => {
+          if (current) {
+            setAnimClass(`anim-${current.animationOut}`);
+            setTimeout(() => {
+              setIsVisible(false);
+              setActiveMedia(null);
+              setAnimClass('');
+            }, (current.animationOutSpeed || 0.5) * 1000);
+          }
+          return current;
+        });
       }
     });
 
-    return () => {
-      cleanup();
-      clearTimers();
-    };
-  }, [showNewMedia, userId, activeMedia]);
+    return () => cleanup();
+  }, [showNewMedia, userId]);
+
+  useEffect(() => {
+    return () => clearTimers();
+  }, []);
 
   // Set video volume when activeMedia changes
   useEffect(() => {
