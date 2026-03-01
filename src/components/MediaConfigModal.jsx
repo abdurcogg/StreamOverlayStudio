@@ -90,7 +90,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
           <button className="close-btn" onClick={onClose}>✕</button>
         </div>
 
-        <div className="modal-body">
+        <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '8px' }}>
           {/* --- SCALE SECTION --- */}
           <div className="form-group" style={{ marginBottom: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
