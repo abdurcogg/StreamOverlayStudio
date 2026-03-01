@@ -26,7 +26,7 @@ export default function OverlaySDashboard() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [configs, setConfigs] = useState([]);
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState(new Set());
   const [canvasPreset, setCanvasPreset] = useState('youtube');
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState(null);
@@ -41,7 +41,21 @@ export default function OverlaySDashboard() {
   const [dragState, setDragState] = useState(null);
 
   const preset = PRESETS.find(p => p.id === canvasPreset) || PRESETS[0];
-  const selected = configs.find(c => c.id === selectedId);
+  const primaryId = [...selectedIds][selectedIds.size - 1] || null;
+  const selected = configs.find(c => c.id === primaryId);
+
+  const selectSource = (id, shiftKey) => {
+    setSelectedIds(prev => {
+      if (shiftKey) {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id); else next.add(id);
+        return next;
+      }
+      return new Set([id]);
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
   const admin = session && isAdmin(session.user.email);
 
   // Auth
@@ -112,8 +126,13 @@ export default function OverlaySDashboard() {
 
   const handleLogout = async () => { await supabase.auth.signOut(); setConfigs([]); };
 
+  // Canvas display height: cap at 400px
+  const maxCanvasH = 400;
+  const canvasAspect = preset.h / preset.w;
+  const canvasDisplayH = Math.min(canvasRect.w * canvasAspect, maxCanvasH);
+
   // Scale factor: canvas coords -> screen px
-  const scale = Math.min(canvasRect.w / preset.w, canvasRect.h / preset.h);
+  const scale = Math.min(canvasRect.w / preset.w, canvasDisplayH / preset.h);
 
   // --- DRAG ---
   const startDrag = useCallback((e, id, type, handle) => {
@@ -121,7 +140,7 @@ export default function OverlaySDashboard() {
     e.preventDefault();
     const cfg = configs.find(c => c.id === id);
     if (!cfg) return;
-    setSelectedId(id);
+    selectSource(id, false);
     const nw = cfg.naturalWidth || 400;
     const nh = cfg.naturalHeight || 400;
     const s = (cfg.scale || 100) / 100;
@@ -194,10 +213,29 @@ export default function OverlaySDashboard() {
     setEditingConfig(null);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this source?')) return;
-    try { await deleteMediaConfig(id); await fetchAll(); showToast('Deleted', 'error'); } catch (err) { showToast('Error: ' + err.message, 'error'); }
-    if (selectedId === id) setSelectedId(null);
+  const handleDelete = async (ids) => {
+    const idsArr = Array.isArray(ids) ? ids : [ids];
+    if (!window.confirm(`Delete ${idsArr.length} source(s)?`)) return;
+    try {
+      for (const id of idsArr) await deleteMediaConfig(id);
+      await fetchAll(); showToast('Deleted', 'error');
+    } catch (err) { showToast('Error: ' + err.message, 'error'); }
+    setSelectedIds(new Set());
+  };
+
+  const centerSelected = async () => {
+    if (!primaryId) return;
+    const cfg = configs.find(c => c.id === primaryId);
+    if (!cfg) return;
+    const nw = cfg.naturalWidth || 400;
+    const nh = cfg.naturalHeight || 400;
+    const s = (cfg.scale || 100) / 100;
+    const cx = Math.round((preset.w - nw * s) / 2);
+    const cy = Math.round((preset.h - nh * s) / 2);
+    const pos = { x: Math.max(0, cx), y: Math.max(0, cy) };
+    const newConfigs = configs.map(c => c.id === primaryId ? { ...c, position: pos } : c);
+    setConfigs(newConfigs);
+    try { await updateMediaConfig(primaryId, { position: pos }); } catch {}
   };
 
   const toggleVisibility = async (id) => {
@@ -210,14 +248,14 @@ export default function OverlaySDashboard() {
   };
 
   const updateProperty = async (key, value) => {
-    if (!selectedId) return;
-    const newConfigs = configs.map(c => c.id === selectedId ? { ...c, [key]: value } : c);
+    if (!primaryId) return;
+    const newConfigs = configs.map(c => c.id === primaryId ? { ...c, [key]: value } : c);
     setConfigs(newConfigs);
   };
 
   const saveProperty = async (updates) => {
-    if (!selectedId) return;
-    try { await updateMediaConfig(selectedId, updates); } catch {}
+    if (!primaryId) return;
+    try { await updateMediaConfig(primaryId, updates); } catch {}
   };
 
   const handleCopy = async () => {
@@ -312,16 +350,14 @@ export default function OverlaySDashboard() {
           style={{
             position: 'relative',
             width: '100%',
-            // Maintain aspect ratio but cap height
-            paddingBottom: `min(${(preset.h / preset.w) * 100}%, 400px)`,
-            maxHeight: 400,
+            height: canvasDisplayH,
             background: '#0a0a0a',
             border: '1px solid var(--border-color)',
             borderRadius: '6px 6px 0 0',
             overflow: 'hidden',
             cursor: dragState ? 'grabbing' : 'default',
           }}
-          onClick={(e) => { if (e.target === e.currentTarget || e.target.closest('[data-canvas-bg]')) setSelectedId(null); }}
+          onClick={(e) => { if (e.target === e.currentTarget || e.target.closest('[data-canvas-bg]')) clearSelection(); }}
           onMouseMove={onMouseMove}
           onMouseUp={onMouseUp}
         >
@@ -340,7 +376,7 @@ export default function OverlaySDashboard() {
               const s = (cfg.scale || 100) / 100;
               const w = nw * s;
               const h = cfg.itemType === 'text' ? nh * s : nh * s;
-              const isSel = cfg.id === selectedId;
+              const isSel = selectedIds.has(cfg.id);
 
               return (
                 <div
@@ -359,7 +395,7 @@ export default function OverlaySDashboard() {
                     filter: `blur(${cfg.blur || 0}px) brightness(${cfg.brightness || 100}%)`,
                   }}
                   onMouseDown={(e) => startDrag(e, cfg.id, 'move', 'move')}
-                  onClick={(e) => { e.stopPropagation(); setSelectedId(cfg.id); }}
+                  onClick={(e) => { e.stopPropagation(); selectSource(cfg.id, e.shiftKey); }}
                 >
                   {/* Content */}
                   {cfg.itemType === 'text' ? (
@@ -429,11 +465,11 @@ export default function OverlaySDashboard() {
               {configs.map((cfg, idx) => (
                 <div
                   key={cfg.id}
-                  onClick={() => setSelectedId(cfg.id)}
+                  onClick={(e) => selectSource(cfg.id, e.shiftKey)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 8,
                     padding: '6px 10px', cursor: 'pointer',
-                    background: cfg.id === selectedId ? 'var(--accent-cyan-dim)' : 'transparent',
+                    background: selectedIds.has(cfg.id) ? 'var(--accent-cyan-dim)' : 'transparent',
                     borderBottom: '1px solid rgba(255,255,255,0.03)',
                     fontSize: 12, color: cfg.visible === false ? '#555' : 'var(--text-primary)',
                   }}
@@ -466,8 +502,8 @@ export default function OverlaySDashboard() {
                   </div>
                 )}
               </div>
-              <button className="btn btn-ghost" style={{ fontSize: 11, padding: '4px 8px' }} onClick={() => selectedId && handleDelete(selectedId)} disabled={!selectedId}>-</button>
-              <button className="btn btn-ghost" style={{ fontSize: 11, padding: '4px 8px' }} onClick={() => { if (selected) { setEditingConfig(selected); if (selected.itemType === 'text') setShowTextModal(true); else setShowMediaModal(true); } }} disabled={!selectedId}>Edit</button>
+              <button className="btn btn-ghost" style={{ fontSize: 11, padding: '4px 8px' }} onClick={() => selectedIds.size > 0 && handleDelete([...selectedIds])} disabled={selectedIds.size === 0}>-</button>
+              <button className="btn btn-ghost" style={{ fontSize: 11, padding: '4px 8px' }} onClick={() => { if (selected) { setEditingConfig(selected); if (selected.itemType === 'text') setShowTextModal(true); else setShowMediaModal(true); } }} disabled={!selected}>Edit</button>
             </div>
           </div>
 
@@ -479,8 +515,8 @@ export default function OverlaySDashboard() {
               <div style={{ flex: 1, overflow: 'auto', padding: 10 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>{selected.title || selected.text || selected.fileName || 'Untitled'}</div>
 
-                {/* Position */}
-                <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                {/* Position + Center button */}
+                <div style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'flex-end' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 2 }}>X</div>
                     <input type="number" className="form-input" style={{ padding: '4px 6px', fontSize: 12 }} value={selected.position?.x || 0} onChange={(e) => updateProperty('position', { ...selected.position, x: Number(e.target.value) })} onBlur={() => saveProperty({ position: selected.position })} />
@@ -493,6 +529,7 @@ export default function OverlaySDashboard() {
                     <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 2 }}>Scale %</div>
                     <input type="number" className="form-input" style={{ padding: '4px 6px', fontSize: 12 }} value={selected.scale || 100} onChange={(e) => updateProperty('scale', Number(e.target.value))} onBlur={() => saveProperty({ scale: selected.scale })} />
                   </div>
+                  <button className="btn btn-ghost" onClick={centerSelected} title="Set to Center" style={{ padding: '4px 8px', fontSize: 11, whiteSpace: 'nowrap' }}>Center</button>
                 </div>
 
                 {/* Opacity / Blur / Brightness */}
