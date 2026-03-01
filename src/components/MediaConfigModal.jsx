@@ -167,6 +167,30 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
               preset="youtube" 
               showCrop={false} 
             />
+            {/* Manual X/Y Inputs */}
+            <div style={{ display: 'flex', gap: 12, marginTop: 12, padding: '10px', background: 'var(--bg-secondary)', borderRadius: 4, border: '1px solid var(--border-color)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>POS X</span>
+                <input 
+                  type="number" 
+                  className="form-input" 
+                  style={{ fontSize: 12, padding: '4px 8px' }} 
+                  value={Math.round(form.position?.x || 0)} 
+                  onChange={e => update({ position: { ...form.position, x: parseInt(e.target.value) || 0 } })}
+                />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>POS Y</span>
+                <input 
+                  type="number" 
+                  className="form-input" 
+                  style={{ fontSize: 12, padding: '4px 8px' }} 
+                  value={Math.round(form.position?.y || 0)} 
+                  onChange={e => update({ position: { ...form.position, y: parseInt(e.target.value) || 0 } })}
+                />
+              </div>
+              <button className="btn btn-ghost" style={{ fontSize: 10, padding: '2px 8px' }} onClick={() => update({ position: { x: 760, y: 340 } })}>center</button>
+            </div>
           </div>
 
           <div style={{ borderTop: '1px solid var(--border-color)', margin: '20px 0' }} />

@@ -67,6 +67,7 @@ export default function MediaCard({ config, onEdit, onDelete }) {
             <span>Time: {config.duration}s</span>
           </>
           <span>Scale: {config.scale}%</span>
+          <span>Pos: {Math.round(config.position?.x || 0)}, {Math.round(config.position?.y || 0)}</span>
           {config.sfxUrl && <span>Sound: SFX</span>}
         </div>
         <div className="card-actions">
