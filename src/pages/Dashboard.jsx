@@ -239,6 +239,7 @@ export default function Dashboard() {
           config={editingConfig}
           onSave={handleSave}
           onClose={() => { setShowModal(false); setEditingConfig(null); }}
+          defaultType="reacts"
         />
       )}
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ANIMATION_OPTIONS, ANIMATION_OUT_OPTIONS } from '../lib/store';
 import PositionEditor from './PositionEditor';
 
-export default function MediaConfigModal({ config, onSave, onClose }) {
+export default function MediaConfigModal({ config, onSave, onClose, defaultType = 'reacts' }) {
   const [form, setForm] = useState({
     title: '',
     mediaUrl: '',
@@ -22,7 +22,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
     naturalHeight: 400,
     volume: 80,
     sfxVolume: 80,
-    type: 'reacts', // default
+    type: config?.id ? (config.type || 'reacts') : defaultType, 
     visible: true,
     opacity: 100,
     blur: 0,
@@ -188,6 +188,47 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
             />
             <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Show this overlay in the widget</span>
           </div>
+
+          {/* Size Presets (Only for OverlayS) */}
+          {form.type === 'overlays' && (
+            <div className="form-group" style={{ marginTop: '16px' }}>
+              <label className="form-label">Size Presets</label>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button 
+                  className="btn btn-ghost" 
+                  style={{ fontSize: '11px', padding: '6px 12px' }}
+                  onClick={() => update({ scale: 100 })}
+                >
+                  Original (100%)
+                </button>
+                <button 
+                  className="btn btn-ghost" 
+                  style={{ fontSize: '11px', padding: '6px 12px' }}
+                  onClick={() => update({ scale: 50 })}
+                >
+                  Small (50%)
+                </button>
+                <button 
+                  className="btn btn-ghost" 
+                  style={{ fontSize: '11px', padding: '6px 12px' }}
+                  onClick={() => update({ scale: 200 })}
+                >
+                  Large (200%)
+                </button>
+                <button 
+                  className="btn btn-ghost" 
+                  style={{ fontSize: '11px', padding: '6px 12px', border: '1px solid var(--accent-cyan)' }}
+                  onClick={() => {
+                    const params = new URLSearchParams(window.location.search);
+                    // This is just a UI reminder for the user
+                    alert("This will set the preview to roughly TikTok proportions. Active in widget via ?preset=tiktok");
+                  }}
+                >
+                  📱 TikTok Safe Mode
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Title Input */}
           <div className="form-group" style={{ marginTop: '16px' }}>

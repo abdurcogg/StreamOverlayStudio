@@ -139,15 +139,14 @@ export default function Widget() {
         if (config) {
           clearTimers();
           
-          if (activeMedia && activeMedia.id === config.id) {
-            // Force re-trigger of same animation by briefly resetting
-            setAnimClass('');
-            requestAnimationFrame(() => {
-              showNewMedia(config);
-            });
-          } else {
+          // Re-trigger/Reset logic: always treat as new to restart animation/audio
+          setIsVisible(false);
+          setActiveMedia(null);
+          setAnimClass('');
+          
+          requestAnimationFrame(() => {
             showNewMedia(config);
-          }
+          });
         }
       } else if (data.type === 'HIDE_MEDIA') {
         setActiveMedia(current => {

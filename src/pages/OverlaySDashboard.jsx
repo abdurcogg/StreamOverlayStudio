@@ -239,6 +239,7 @@ export default function OverlaySDashboard() {
           config={editingConfig}
           onSave={handleSave}
           onClose={() => { setShowModal(false); setEditingConfig(null); }}
+          defaultType="overlays"
         />
       )}
 
