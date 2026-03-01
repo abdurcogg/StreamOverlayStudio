@@ -6,9 +6,8 @@ export function isAdmin(email) {
   return email === ADMIN_EMAIL;
 }
 
-// Maintenance status stored in Supabase app_settings table (key: 'maintenance')
-// Fallback: localStorage if table doesn't exist
-
+// Maintenance: ALWAYS default to false (not under maintenance).
+// Only return true if we can CONFIRM it's ON in the database.
 export async function getMaintenanceStatus() {
   try {
     const { data, error } = await supabase
@@ -17,30 +16,29 @@ export async function getMaintenanceStatus() {
       .eq('key', 'maintenance')
       .single();
 
-    if (error || !data) {
-      // Fallback to localStorage
-      return localStorage.getItem('app_maintenance') === 'true';
-    }
+    if (error || !data) return false;
     return data.value === 'true' || data.value === true;
   } catch {
-    return localStorage.getItem('app_maintenance') === 'true';
+    return false;
   }
 }
 
 export async function setMaintenanceStatus(enabled) {
   const val = enabled ? 'true' : 'false';
-  localStorage.setItem('app_maintenance', val);
 
   try {
-    // Try upsert to app_settings
     const { error } = await supabase
       .from('app_settings')
       .upsert({ key: 'maintenance', value: val }, { onConflict: 'key' });
 
     if (error) {
-      console.warn('Could not save maintenance to DB, using localStorage:', error.message);
+      console.warn('Could not save maintenance to DB:', error.message);
+      // Fallback: store in user metadata or just warn
+      return false;
     }
+    return true;
   } catch {
-    console.warn('Maintenance saved to localStorage only.');
+    console.warn('Maintenance save failed.');
+    return false;
   }
 }
