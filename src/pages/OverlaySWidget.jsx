@@ -1,55 +1,46 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { loadMediaConfigs } from '../lib/store';
+
+const CANVAS_PRESETS = {
+  youtube: { w: 1920, h: 1080 },
+  tiktok:  { w: 1080, h: 1920 },
+  square:  { w: 1080, h: 1080 },
+};
 
 export default function OverlaySWidget() {
   const [overlays, setOverlays] = useState([]);
-  const [aspectRatio, setAspectRatio] = useState('16/9'); // Default YouTube
+  const [preset, setPreset] = useState('youtube');
 
   useEffect(() => {
-    // Add transparent background class
     document.body.classList.add('widget-page');
 
     const params = new URLSearchParams(window.location.search);
     const userId = params.get('uid');
-    const preset = params.get('preset') || 'youtube';
-
-    // Set Aspect Ratio based on preset
-    if (preset === 'tiktok') setAspectRatio('9/16');
-    else if (preset === 'youtube') setAspectRatio('16/9');
-    else if (preset === 'custom') {
-      const w = params.get('w');
-      const h = params.get('h');
-      if (w && h) setAspectRatio(`${w}/${h}`);
-    }
+    const presetId = params.get('preset') || 'youtube';
+    setPreset(presetId);
 
     if (!userId) return;
 
-    // Initial load
     const fetchOverlays = async () => {
       const { data, error } = await supabase
         .from('media_configs')
         .select('*')
-        .eq('user_id', userId)
-        .eq('type', 'overlays');
-      
+        .eq('user_id', userId);
+
       if (!error && data) {
-        setOverlays(data.map(row => ({ id: row.id, ...row.config })));
+        const filtered = data
+          .filter(row => (row.config?.type || 'reacts') === 'overlays')
+          .filter(row => row.config?.visible !== false)
+          .map(row => ({ id: row.id, ...row.config }));
+        setOverlays(filtered);
       }
     };
 
     fetchOverlays();
 
-    // Subscribe to real-time changes
     const channel = supabase
-      .channel('overlays-realtime')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'media_configs', filter: `user_id=eq.${userId}` },
-        (payload) => {
-          fetchOverlays(); // Simple re-fetch for now to ensure correct ordering/filtering
-        }
-      )
+      .channel('overlays-widget-rt')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'media_configs', filter: `user_id=eq.${userId}` }, () => fetchOverlays())
       .subscribe();
 
     return () => {
@@ -58,88 +49,93 @@ export default function OverlaySWidget() {
     };
   }, []);
 
+  const canvas = CANVAS_PRESETS[preset] || CANVAS_PRESETS.youtube;
+
   return (
-    <div className="overlays-container" style={{ 
-      width: '100vw', 
-      height: '100vh', 
-      position: 'relative', 
-      overflow: 'hidden',
-      aspectRatio: aspectRatio,
-      margin: '0 auto'
-    }}>
-      <style>
-        {`
-          @keyframes marquee-left {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-          }
-          @keyframes marquee-right {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-          }
-          .scrolling-text {
-            white-space: nowrap;
-            display: inline-block;
-          }
-        `}
-      </style>
-      {overlays.filter(item => item.visible !== false).map((item) => (
-        <div
-          key={item.id}
-          style={{
-            position: 'absolute',
-            left: `${item.x}%`,
-            top: `${item.y}%`,
-            width: `${item.scale * 10}%`,
-            transform: `translate(-50%, -50%)`,
-            zIndex: item.zIndex || 1,
-            pointerEvents: 'none',
-            opacity: (item.opacity ?? 100) / 100,
-            filter: `blur(${item.blur || 0}px) brightness(${item.brightness || 100}%)`,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center'
-          }}
-        >
-          {item.mediaUrl && (
-            item.mediaType === 'video' ? (
-              <video
-                src={item.mediaUrl}
-                autoPlay
-                loop
-                muted
-                playsInline
-                style={{ width: '100%', display: 'block' }}
-              />
-            ) : (
-              <img
-                src={item.mediaUrl}
-                alt=""
-                style={{ width: '100%', display: 'block' }}
-              />
-            )
-          )}
-          
-          {item.text && (
-            <div style={{ 
-              width: '100%', 
-              overflow: 'hidden', 
-              marginTop: '4px',
-              textAlign: 'center',
-              color: 'white',
-              fontSize: '1.2rem',
-              fontWeight: 'bold',
-              textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
-            }}>
-              <div className={item.isScrolling ? 'scrolling-text' : ''} style={{
-                animation: item.isScrolling ? `marquee-${item.scrollDirection || 'left'} ${15 - (item.scrollSpeed || 5)}s linear infinite` : 'none'
+    <div style={{ width: '100vw', height: '100vh', position: 'fixed', top: 0, left: 0, overflow: 'hidden', background: 'transparent' }}>
+      <style>{`
+        @keyframes marquee-left {
+          0% { transform: translateX(150%); }
+          100% { transform: translateX(-150%); }
+        }
+        @keyframes marquee-right {
+          0% { transform: translateX(-150%); }
+          100% { transform: translateX(150%); }
+        }
+        .overlay-item { position: absolute; pointer-events: none; }
+      `}</style>
+
+      {overlays.map((item) => {
+        const pos = item.position || { x: 0, y: 0 };
+        const naturalW = item.naturalWidth || 400;
+        const naturalH = item.naturalHeight || 400;
+        const itemScale = (item.scale || 100) / 100;
+        const itemW = naturalW * itemScale;
+        const itemH = naturalH * itemScale;
+
+        // Scale the canvas coordinates to actual viewport
+        const scaleX = window.innerWidth / canvas.w;
+        const scaleY = window.innerHeight / canvas.h;
+        const s = Math.min(scaleX, scaleY);
+
+        const crop = item.crop || { top: 0, bottom: 0, left: 0, right: 0 };
+        const cropClip = `inset(${crop.top}% ${crop.right}% ${crop.bottom}% ${crop.left}%)`;
+
+        const filterVal = `blur(${item.blur || 0}px) brightness(${item.brightness || 100}%)`;
+
+        return (
+          <div
+            key={item.id}
+            className="overlay-item"
+            style={{
+              left: pos.x * s,
+              top: pos.y * s,
+              width: itemW * s,
+              height: item.itemType === 'text' ? 'auto' : itemH * s,
+              opacity: (item.opacity ?? 100) / 100,
+              filter: filterVal,
+              zIndex: item.zIndex || 1,
+              overflow: item.itemType === 'text' ? 'hidden' : 'visible',
+              clipPath: item.itemType !== 'text' ? cropClip : 'none',
+            }}
+          >
+            {item.itemType === 'text' ? (
+              // Text layer
+              <div style={{
+                fontFamily: item.fontFamily || 'Inter, sans-serif',
+                fontSize: (item.fontSize || 48) * s,
+                fontWeight: item.fontWeight || 'bold',
+                color: item.textColor || '#ffffff',
+                textShadow: `${item.strokeWidth || 2}px ${item.strokeWidth || 2}px 4px ${item.strokeColor || '#000000'}`,
+                WebkitTextStroke: `${item.strokeWidth || 2}px ${item.strokeColor || '#000000'}`,
+                textAlign: item.textAlign || 'center',
+                whiteSpace: 'nowrap',
+                animation: item.isScrolling ? `marquee-${item.scrollDirection || 'left'} ${Math.max(2, 16 - (item.scrollSpeed || 5))}s linear infinite` : 'none',
+                display: 'inline-block',
               }}>
                 {item.text}
               </div>
-            </div>
-          )}
-        </div>
-      ))}
+            ) : (
+              // Media layer (image/video/gif)
+              item.mediaUrl && (
+                item.mediaType === 'video' ? (
+                  <video
+                    src={item.mediaUrl}
+                    autoPlay loop muted playsInline
+                    style={{ width: '100%', height: '100%', objectFit: 'fill', display: 'block' }}
+                  />
+                ) : (
+                  <img
+                    src={item.mediaUrl}
+                    alt=""
+                    style={{ width: '100%', height: '100%', objectFit: 'fill', display: 'block' }}
+                  />
+                )
+              )
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

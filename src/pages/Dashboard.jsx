@@ -240,6 +240,7 @@ export default function Dashboard() {
           onSave={handleSave}
           onClose={() => { setShowModal(false); setEditingConfig(null); }}
           defaultType="reacts"
+          canvasPreset="youtube"
         />
       )}
 
