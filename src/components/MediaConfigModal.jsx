@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ANIMATION_OPTIONS, ANIMATION_OUT_OPTIONS } from '../lib/store';
+import DragResizeEditor from './DragResizeEditor';
 
 export default function MediaConfigModal({ config, onSave, onClose }) {
   const [form, setForm] = useState({
@@ -90,30 +91,101 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
         </div>
 
         <div className="modal-body">
-          {/* File Upload / Preview */}
-          {form.mediaUrl ? (
-            <>
-              <div className="form-label">Media Preview</div>
-              <div className="media-preview-box" style={{ overflow: 'hidden' }}>
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {form.mediaType === 'video'
-                    ? <video src={form.mediaUrl} controls muted style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                    : <img src={form.mediaUrl} alt={form.fileName} style={{ objectFit: 'contain', maxWidth: '100%', maxHeight: '100%' }} />
-                  }
+          {/* --- SCALE SECTION --- */}
+          <div className="form-group" style={{ marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <label className="form-label" style={{ marginBottom: 0 }}>SCALE %</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>CUSTOM PX</span>
+                <button className="btn btn-ghost" style={{ padding: '2px 8px', fontSize: 10 }} onClick={() => update({ maxWidth: form.naturalWidth, maxHeight: form.naturalHeight, scale: 100 })}>↺ reset</button>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              {/* Presets */}
+              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', flex: 1 }}>
+                {[50, 75, 100, 150, 200].map(s => (
+                  <button
+                    key={s}
+                    className={`btn ${form.scale === s ? 'btn-primary' : 'btn-ghost'}`}
+                    style={{ padding: '6px 12px', fontSize: 12, minWidth: 50 }}
+                    onClick={() => update({ scale: s })}
+                  >
+                    {s}%
+                  </button>
+                ))}
+                <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-secondary)', borderRadius: 4, padding: '0 8px', border: '1px solid var(--border-color)', marginLeft: 4 }}>
+                  <input 
+                    type="number" 
+                    value={form.scale} 
+                    onChange={e => update({ scale: parseInt(e.target.value) || 0 })}
+                    style={{ background: 'transparent', border: 'none', color: '#fff', width: 40, textAlign: 'right', fontSize: 12, outline: 'none' }}
+                  />
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 2 }}>%</span>
                 </div>
               </div>
-              <div className="file-name-text">
-                {form.fileName}
-                {form.naturalWidth > 0 && <span style={{ marginLeft: 8, color: 'var(--accent-cyan)' }}>({form.naturalWidth}×{form.naturalHeight}px)</span>}
-                <button className="btn btn-ghost" style={{ marginLeft: 12, padding: '4px 10px', fontSize: 11 }} onClick={() => update({ mediaUrl: '', fileName: '', mediaType: 'image' })}>Change File</button>
+
+              <div style={{ color: 'var(--text-muted)', marginTop: 8 }}>or</div>
+
+              {/* Custom PX */}
+              <div style={{ display: 'flex', gap: 8, flex: 1 }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 10, color: 'var(--text-muted)' }}>W</span>
+                  <input 
+                    type="number" 
+                    className="form-input" 
+                    style={{ paddingLeft: 24, fontSize: 12 }} 
+                    value={Math.round((form.naturalWidth * form.scale) / 100)} 
+                    onChange={e => {
+                      const newW = parseInt(e.target.value) || 0;
+                      update({ scale: Math.round((newW / (form.naturalWidth || 1)) * 100) });
+                    }}
+                  />
+                </div>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 10, color: 'var(--text-muted)' }}>H</span>
+                  <input 
+                    type="number" 
+                    className="form-input" 
+                    style={{ paddingLeft: 24, fontSize: 12 }} 
+                    value={Math.round((form.naturalHeight * form.scale) / 100)} 
+                    onChange={e => {
+                      const newH = parseInt(e.target.value) || 0;
+                      update({ scale: Math.round((newH / (form.naturalHeight || 1)) * 100) });
+                    }}
+                  />
+                </div>
               </div>
-            </>
-          ) : (
-            <div className="form-group">
-              <label className="form-label">Upload Media (Image / Video / GIF)</label>
-              <input type="file" accept="image/*,video/*" onChange={handleFileChange} className="form-input" style={{ padding: '8px' }} />
             </div>
-          )}
+          </div>
+
+          {/* --- POSITION SECTION --- */}
+          <div className="form-group" style={{ marginBottom: 20 }}>
+            <DragResizeEditor 
+              config={form} 
+              onChange={update} 
+              preset="youtube" 
+              showCrop={false} 
+            />
+          </div>
+
+          <div style={{ borderTop: '1px solid var(--border-color)', margin: '20px 0' }} />
+
+          {/* File Info / Change */}
+          <div className="form-group">
+            <label className="form-label">MEDIA SOURCE</label>
+            {form.mediaUrl ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                <div style={{ flex: 1, overflow: 'hidden' }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{form.title || form.fileName}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{form.fileName} &bull; {form.naturalWidth}×{form.naturalHeight}px</div>
+                </div>
+                <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: 11 }} onClick={() => update({ mediaUrl: '', fileName: '', mediaType: 'image' })}>Change File</button>
+              </div>
+            ) : (
+              <input type="file" accept="image/*,video/*" onChange={handleFileChange} className="form-input" style={{ padding: '8px' }} />
+            )}
+          </div>
 
           {/* Visibility & Title */}
           <div className="form-row" style={{ marginTop: 16 }}>
@@ -122,8 +194,8 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
                 <label className="form-label" style={{ marginBottom: 0 }} htmlFor="vis">Show in widget</label>
              </div>
              <div className="form-group" style={{ flex: 2 }}>
-                <label className="form-label">Title</label>
-                <input type="text" className="form-input" value={form.title} onChange={(e) => update({ title: e.target.value })} />
+                <label className="form-label">Display Name (Dashboard)</label>
+                <input type="text" className="form-input" value={form.title} onChange={(e) => update({ title: e.target.value })} placeholder="e.g. Meme React" />
              </div>
           </div>
 
