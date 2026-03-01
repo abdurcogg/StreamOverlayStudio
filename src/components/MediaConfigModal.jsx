@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ANIMATION_OPTIONS, ANIMATION_OUT_OPTIONS } from '../lib/store';
-import DragResizeEditor from './DragResizeEditor';
+import PositionEditor from './PositionEditor';
 
 export default function MediaConfigModal({ config, onSave, onClose }) {
   const [form, setForm] = useState({
@@ -161,11 +161,9 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
 
           {/* --- POSITION SECTION --- */}
           <div className="form-group" style={{ marginBottom: 20 }}>
-            <DragResizeEditor 
+            <PositionEditor 
               config={form} 
               onChange={update} 
-              preset="youtube" 
-              showCrop={false} 
             />
             {/* Manual X/Y Inputs */}
             <div style={{ display: 'flex', gap: 12, marginTop: 12, padding: '10px', background: 'var(--bg-secondary)', borderRadius: 4, border: '1px solid var(--border-color)' }}>
