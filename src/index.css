@@ -60,6 +60,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Widget page transparent background overrides */
+body.widget-page,
+body.widget-page #root {
+  background: transparent !important;
+}
+
 #root {
   min-height: 100vh;
 }
