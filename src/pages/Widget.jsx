@@ -239,6 +239,7 @@ export default function Widget() {
           animationDuration: `${animDuration}s`,
           animationFillMode: 'both',
           animationTimingFunction: 'ease-in-out',
+          willChange: 'transform, opacity, width, height, left, top',
         }}
       >
         <div style={{
@@ -255,7 +256,10 @@ export default function Widget() {
               autoPlay
               playsInline
               loop
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              preload="auto"
+              disablePictureInPicture
+              disableRemotePlayback
+              style={{ width: '100%', height: '100%', objectFit: 'contain', willChange: 'opacity' }}
             />
           ) : (
             <img

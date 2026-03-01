@@ -161,6 +161,28 @@ export default function PositionEditor({ config, onChange }) {
         X: <span>{pos.x}</span> &nbsp; Y: <span>{pos.y}</span>
         &nbsp;&nbsp; Size: <span>{Math.round(boxW)}×{Math.round(boxH)}</span>px
       </div>
+
+      <div style={{ marginTop: 16 }}>
+        <div className="form-label">Crop Media (%)</div>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 100 }}>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Top ({cropT}%)</span>
+            <input type="range" min="0" max="100" value={cropT} onChange={e => onChange({ crop: { ...config.crop, top: parseInt(e.target.value) } })} style={{ width: '100%' }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 100 }}>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Bottom ({cropB}%)</span>
+            <input type="range" min="0" max="100" value={cropB} onChange={e => onChange({ crop: { ...config.crop, bottom: parseInt(e.target.value) } })} style={{ width: '100%' }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 100 }}>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Left ({cropL}%)</span>
+            <input type="range" min="0" max="100" value={cropL} onChange={e => onChange({ crop: { ...config.crop, left: parseInt(e.target.value) } })} style={{ width: '100%' }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 100 }}>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Right ({cropR}%)</span>
+            <input type="range" min="0" max="100" value={cropR} onChange={e => onChange({ crop: { ...config.crop, right: parseInt(e.target.value) } })} style={{ width: '100%' }} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

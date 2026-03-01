@@ -29,7 +29,7 @@ export default function MediaCard({ config, onEdit, onDelete }) {
       return <div className="no-media">No Media</div>;
     }
     if (config.mediaType === 'video') {
-      return <video ref={videoRef} src={config.mediaUrl} playsInline muted loop style={{ maxWidth: '100%', maxHeight: '100%' }} />;
+      return <video ref={videoRef} src={config.mediaUrl} preload="metadata" disablePictureInPicture disableRemotePlayback playsInline muted loop style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />;
     }
     return <img src={config.mediaUrl} alt={config.fileName} />;
   };
