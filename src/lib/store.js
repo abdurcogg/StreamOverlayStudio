@@ -126,6 +126,46 @@ export async function updateMediaConfig(id, updates) {
 }
 
 export async function deleteMediaConfig(id) {
+  // 1. Fetch current config to find associated files
+  const { data: current, error: fetchErr } = await supabase
+    .from('media_configs')
+    .select('config')
+    .eq('id', id)
+    .single();
+
+  if (fetchErr) throw fetchErr;
+
+  const config = current.config;
+  const filesToDelete = [];
+
+  const extractStoragePath = (url) => {
+    if (!url || typeof url !== 'string') return null;
+    try {
+      const urlObj = new URL(url);
+      const parts = urlObj.pathname.split('/public/media/');
+      if (parts.length > 1) {
+        return parts[1]; // Returns path like userId/filename.ext
+      }
+    } catch (e) {}
+    return null;
+  };
+
+  const mediaPath = extractStoragePath(config.mediaUrl);
+  if (mediaPath) filesToDelete.push(mediaPath);
+
+  const sfxPath = extractStoragePath(config.sfxUrl);
+  if (sfxPath) filesToDelete.push(sfxPath);
+
+  // 2. Delete files from storage bucket
+  if (filesToDelete.length > 0) {
+    const { error: storageErr } = await supabase.storage.from('media').remove(filesToDelete);
+    if (storageErr) {
+      console.error('Failed to delete media from storage:', storageErr);
+      // We log but continue, so the DB record is still deleted
+    }
+  }
+
+  // 3. Delete database record
   const { error } = await supabase
     .from('media_configs')
     .delete()
