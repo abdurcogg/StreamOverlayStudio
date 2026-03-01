@@ -35,11 +35,17 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
       const video = document.createElement('video');
       video.src = url;
       video.onloadedmetadata = () => {
+        // Auto-detect duration: use real video duration, capped at 30s
+        const realDuration = video.duration;
+        const autoDuration = (realDuration && isFinite(realDuration))
+          ? Math.min(Math.ceil(realDuration), 30)
+          : 5;
         update({
           naturalWidth: video.videoWidth,
           naturalHeight: video.videoHeight,
           maxWidth: Math.min(video.videoWidth, 1920),
           maxHeight: Math.min(video.videoHeight, 1080),
+          duration: autoDuration,
         });
       };
     } else {

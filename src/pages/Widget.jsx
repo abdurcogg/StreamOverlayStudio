@@ -15,6 +15,7 @@ export default function Widget() {
   const outTimerRef = useRef(null);
   const videoRef = useRef(null);
   const sfxRef = useRef(null);
+  const fadeIntervalRef = useRef(null);
 
   useEffect(() => {
     if (activeMedia?.mediaType === 'video' && videoRef.current) {
@@ -32,6 +33,49 @@ export default function Widget() {
       clearTimeout(outTimerRef.current);
       outTimerRef.current = null;
     }
+    if (fadeIntervalRef.current) {
+      clearInterval(fadeIntervalRef.current);
+      fadeIntervalRef.current = null;
+    }
+  }, []);
+
+  // Smoothly fade out all audio (video + SFX) over the given duration in seconds
+  const fadeOutAudio = useCallback((durationSec) => {
+    if (fadeIntervalRef.current) {
+      clearInterval(fadeIntervalRef.current);
+      fadeIntervalRef.current = null;
+    }
+
+    const stepMs = 50; // update every 50ms for smooth fade
+    const totalSteps = Math.max(1, Math.floor((durationSec * 1000) / stepMs));
+    let currentStep = 0;
+
+    // Capture starting volumes
+    const videoStartVol = videoRef.current ? videoRef.current.volume : 0;
+    const sfxStartVol = sfxRef.current ? sfxRef.current.volume : 0;
+
+    fadeIntervalRef.current = setInterval(() => {
+      currentStep++;
+      const progress = Math.min(currentStep / totalSteps, 1);
+      const multiplier = 1 - progress; // linear fade from 1 to 0
+
+      if (videoRef.current) {
+        videoRef.current.volume = Math.max(0, videoStartVol * multiplier);
+      }
+      if (sfxRef.current) {
+        try { sfxRef.current.volume = Math.max(0, sfxStartVol * multiplier); } catch {}
+      }
+
+      if (progress >= 1) {
+        clearInterval(fadeIntervalRef.current);
+        fadeIntervalRef.current = null;
+        // Fully stop audio after fade completes
+        if (sfxRef.current) {
+          try { sfxRef.current.pause(); } catch {}
+          sfxRef.current = null;
+        }
+      }
+    }, stepMs);
   }, []);
 
   const showNewMedia = useCallback((config) => {
@@ -62,6 +106,9 @@ export default function Widget() {
         setAnimClass(`anim-${config.animationOut}`);
 
         const outSpeed = Number(config.animationOutSpeed) || 0.5;
+        // Start audio fade-out over the out-animation duration
+        fadeOutAudio(outSpeed);
+
         outTimerRef.current = setTimeout(() => {
           console.log(`Out-animation finished. Removing media from DOM.`);
           setIsVisible(false);
@@ -70,7 +117,7 @@ export default function Widget() {
         }, outSpeed * 1000);
       }, durationNum * 1000);
     }
-  }, [clearTimers]);
+  }, [clearTimers, fadeOutAudio]);
 
   useEffect(() => {
     if (!userId) {
@@ -97,12 +144,15 @@ export default function Widget() {
       } else if (data.type === 'HIDE_MEDIA') {
         setActiveMedia(current => {
           if (current) {
+            const outSpeed = current.animationOutSpeed || 0.5;
             setAnimClass(`anim-${current.animationOut}`);
+            // Start audio fade-out over the out-animation duration
+            fadeOutAudio(outSpeed);
             setTimeout(() => {
               setIsVisible(false);
               setActiveMedia(null);
               setAnimClass('');
-            }, (current.animationOutSpeed || 0.5) * 1000);
+            }, outSpeed * 1000);
           }
           return current;
         });
