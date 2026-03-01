@@ -18,6 +18,14 @@ export default function Widget() {
   const fadeIntervalRef = useRef(null);
 
   useEffect(() => {
+    // Make body transparent for OBS/TikTok natively
+    document.body.classList.add('widget-page');
+    return () => {
+      document.body.classList.remove('widget-page');
+    };
+  }, []);
+
+  useEffect(() => {
     if (activeMedia?.mediaType === 'video' && videoRef.current) {
       videoRef.current.currentTime = 0;
       videoRef.current.play().catch(e => console.error('Video autoplay error:', e));
