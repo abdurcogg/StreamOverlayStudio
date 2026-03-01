@@ -83,20 +83,7 @@ export default function Dashboard() {
     );
   }
 
-  // --- ADMIN CHECK ---
-  if (!isAdmin(session.user.email)) {
-    return (
-      <div className="dashboard" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ textAlign: 'center', background: 'var(--bg-card)', padding: 40, borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-color)' }}>
-          <h1 style={{ fontSize: 20, marginBottom: 12 }}>Access Denied</h1>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: 24 }}>Only the admin can access this dashboard.</p>
-          <button className="btn btn-ghost" onClick={handleLogout}>Logout</button>
-        </div>
-      </div>
-    );
-  }
-
-  // --- MAIN DASHBOARD (Authenticated + Admin) ---
+  // --- MAIN DASHBOARD (Authenticated) ---
   const widgetUrl = `${window.location.origin}/widget?uid=${session.user.id}`;
 
   const handleCopy = async () => {

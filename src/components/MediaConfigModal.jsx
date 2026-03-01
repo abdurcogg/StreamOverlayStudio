@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { ANIMATION_OPTIONS, ANIMATION_OUT_OPTIONS } from '../lib/store';
-import DragResizeEditor from './DragResizeEditor';
 
 export default function MediaConfigModal({ config, onSave, onClose, defaultType = 'reacts', canvasPreset = 'youtube' }) {
   const [form, setForm] = useState({
@@ -234,20 +233,6 @@ export default function MediaConfigModal({ config, onSave, onClose, defaultType 
               )}
             </>
           )}
-
-          {/* Drag Resize/Crop Editor */}
-          <div className="form-group" style={{ marginTop: 16 }}>
-            <label className="form-label">Position, Size &amp; Crop</label>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>
-              Drag the box to move. Drag <span style={{ color: 'var(--accent-cyan)' }}>cyan handles</span> to resize. Drag <span style={{ color: '#ff6600' }}>orange handles</span> to crop.
-            </div>
-            <DragResizeEditor
-              config={form}
-              onChange={update}
-              preset={canvasPreset}
-              showCrop={true}
-            />
-          </div>
         </div>
 
         <div className="modal-footer">

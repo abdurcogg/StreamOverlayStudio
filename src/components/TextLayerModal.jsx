@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import DragResizeEditor from './DragResizeEditor';
+
 
 const GOOGLE_FONTS = [
   'Inter', 'Roboto', 'Poppins', 'Oswald', 'Bebas Neue', 'Bangers',
@@ -218,19 +218,7 @@ export default function TextLayerModal({ config, onSave, onClose, preset = 'yout
             <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Visible in widget</span>
           </div>
 
-          {/* Position on Canvas */}
-          <div className="form-group" style={{ marginTop: 16 }}>
-            <label className="form-label">Position on Canvas</label>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>
-              Drag the box to reposition. Drag edges to resize.
-            </div>
-            <DragResizeEditor
-              config={form}
-              onChange={update}
-              preset={preset}
-              showCrop={false}
-            />
-          </div>
+
 
           {/* Title for Dashboard */}
           <div className="form-group" style={{ marginTop: 12 }}>

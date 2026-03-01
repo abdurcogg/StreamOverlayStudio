@@ -62,6 +62,22 @@ export default function OverlaySDashboard() {
     getMaintenanceStatus().then(setMaintenance);
   }, []);
 
+  // Load Google Fonts for text overlays on the canvas
+  useEffect(() => {
+    const textConfigs = configs.filter(c => c.itemType === 'text' && c.fontFamily);
+    const families = [...new Set(textConfigs.map(c => c.fontFamily))];
+    if (families.length === 0) return;
+    const linkId = 'overlays-google-fonts';
+    let link = document.getElementById(linkId);
+    if (!link) {
+      link = document.createElement('link');
+      link.id = linkId;
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }
+    link.href = `https://fonts.googleapis.com/css2?${families.map(f => `family=${f.replace(/ /g, '+')}:wght@300;400;700;900`).join('&')}&display=swap`;
+  }, [configs]);
+
   // Close add menu on outside click
   useEffect(() => {
     const handler = (e) => { if (addMenuRef.current && !addMenuRef.current.contains(e.target)) setShowAddMenu(false); };
@@ -296,9 +312,10 @@ export default function OverlaySDashboard() {
           style={{
             position: 'relative',
             width: '100%',
-            // Maintain aspect ratio
-            paddingBottom: `${(preset.h / preset.w) * 100}%`,
-            background: '#000',
+            // Maintain aspect ratio but cap height
+            paddingBottom: `min(${(preset.h / preset.w) * 100}%, 400px)`,
+            maxHeight: 400,
+            background: '#0a0a0a',
             border: '1px solid var(--border-color)',
             borderRadius: '6px 6px 0 0',
             overflow: 'hidden',
@@ -317,12 +334,12 @@ export default function OverlaySDashboard() {
 
             {/* Render each overlay */}
             {configs.filter(c => c.visible !== false).map((cfg) => {
-              const p = cfg.position || { x: 0, y: 0 };
+              const p = cfg.position || { x: Math.round((preset.w - (cfg.naturalWidth || 400) * ((cfg.scale || 100) / 100)) / 2), y: Math.round((preset.h - (cfg.naturalHeight || 400) * ((cfg.scale || 100) / 100)) / 2) };
               const nw = cfg.naturalWidth || 400;
               const nh = cfg.naturalHeight || 400;
               const s = (cfg.scale || 100) / 100;
               const w = nw * s;
-              const h = cfg.itemType === 'text' ? 80 * s : nh * s;
+              const h = cfg.itemType === 'text' ? nh * s : nh * s;
               const isSel = cfg.id === selectedId;
 
               return (
@@ -350,10 +367,14 @@ export default function OverlaySDashboard() {
                       width: '100%', height: '100%', display: 'flex', alignItems: 'center',
                       justifyContent: cfg.textAlign === 'left' ? 'flex-start' : cfg.textAlign === 'right' ? 'flex-end' : 'center',
                       color: cfg.textColor || '#fff',
-                      fontFamily: cfg.fontFamily || 'sans-serif',
-                      fontSize: Math.max(6, (cfg.fontSize || 48) * scale * s * 0.3),
+                      fontFamily: cfg.fontFamily || 'Inter, sans-serif',
+                      fontSize: Math.max(6, (cfg.fontSize || 48) * scale),
                       fontWeight: cfg.fontWeight || 'bold',
+                      WebkitTextStroke: `${Math.max(0.5, (cfg.strokeWidth || 0) * scale)}px ${cfg.strokeColor || 'transparent'}`,
+                      textShadow: `0 0 ${Math.max(1, 3 * scale)}px rgba(0,0,0,0.5)`,
                       overflow: 'hidden', whiteSpace: 'nowrap', padding: '0 4px',
+                      WebkitFontSmoothing: 'antialiased',
+                      MozOsxFontSmoothing: 'grayscale',
                     }}>
                       {cfg.text || 'Text'}
                     </div>
