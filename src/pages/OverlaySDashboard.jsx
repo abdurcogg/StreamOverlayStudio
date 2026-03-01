@@ -6,9 +6,9 @@ import MediaConfigModal from '../components/MediaConfigModal';
 import TextLayerModal from '../components/TextLayerModal';
 
 const PRESETS = [
-  { id: 'youtube', label: '▶ YouTube (16:9)', w: 1920, h: 1080 },
-  { id: 'tiktok',  label: '📱 TikTok (9:16)',  w: 1080, h: 1920 },
-  { id: 'square',  label: '⬜ Square (1:1)',   w: 1080, h: 1080 },
+  { id: 'youtube', label: 'YouTube (16:9)', w: 1920, h: 1080 },
+  { id: 'tiktok',  label: 'TikTok (9:16)',  w: 1080, h: 1920 },
+  { id: 'square',  label: 'Square (1:1)',   w: 1080, h: 1080 },
 ];
 
 export default function OverlaySDashboard() {
@@ -176,7 +176,7 @@ export default function OverlaySDashboard() {
               onMouseOver={e => e.target.style.background = 'var(--bg-secondary)'}
               onMouseOut={e => e.target.style.background = 'none'}
             >
-              🖼 Add Image / Video / GIF
+              Add Image / Video / GIF
             </button>
             <button
               style={{ display: 'block', width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-primary)', textAlign: 'left', cursor: 'pointer', fontSize: 13, borderTop: '1px solid var(--border-color)' }}
@@ -184,7 +184,7 @@ export default function OverlaySDashboard() {
               onMouseOver={e => e.target.style.background = 'var(--bg-secondary)'}
               onMouseOut={e => e.target.style.background = 'none'}
             >
-              💬 Add Text Layer
+              Add Text Layer
             </button>
           </div>
         )}

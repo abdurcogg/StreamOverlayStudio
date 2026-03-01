@@ -112,7 +112,7 @@ export default function TextLayerModal({ config, onSave, onClose, preset = 'yout
 
           {/* Font Settings */}
           <div style={{ marginTop: 16, background: 'var(--bg-secondary)', padding: 12, borderRadius: 8, border: '1px solid var(--border-color)' }}>
-            <label className="form-label" style={{ marginBottom: 12 }}>🎨 Font & Style</label>
+            <label className="form-label" style={{ marginBottom: 12 }}>Font & Style</label>
 
             <div className="form-row" style={{ gap: 12, marginBottom: 12 }}>
               <div style={{ flex: 2 }}>
@@ -179,7 +179,7 @@ export default function TextLayerModal({ config, onSave, onClose, preset = 'yout
 
           {/* Scroll Animation */}
           <div style={{ marginTop: 16, background: 'var(--bg-secondary)', padding: 12, borderRadius: 8, border: '1px solid var(--border-color)' }}>
-            <label className="form-label" style={{ marginBottom: 12 }}>🎬 Animation</label>
+            <label className="form-label" style={{ marginBottom: 12 }}>Animation</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
               <input
                 type="checkbox"
@@ -220,7 +220,7 @@ export default function TextLayerModal({ config, onSave, onClose, preset = 'yout
 
           {/* Position on Canvas */}
           <div className="form-group" style={{ marginTop: 16 }}>
-            <label className="form-label">📍 Position on Canvas</label>
+            <label className="form-label">Position on Canvas</label>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>
               Drag the box to reposition. Drag edges to resize.
             </div>

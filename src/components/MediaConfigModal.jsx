@@ -140,7 +140,7 @@ export default function MediaConfigModal({ config, onSave, onClose, defaultType 
           {/* CSS Filters (OverlayS only) */}
           {isOverlay && (
             <div className="form-group" style={{ marginTop: 16, background: 'var(--bg-secondary)', padding: 12, borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
-              <label className="form-label" style={{ marginBottom: 12 }}>✨ CSS Filters</label>
+              <label className="form-label" style={{ marginBottom: 12 }}>CSS Filters</label>
               <div className="form-row" style={{ gap: 12, marginBottom: 12 }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Opacity ({form.opacity ?? 100}%)</div>
@@ -237,7 +237,7 @@ export default function MediaConfigModal({ config, onSave, onClose, defaultType 
 
           {/* Drag Resize/Crop Editor */}
           <div className="form-group" style={{ marginTop: 16 }}>
-            <label className="form-label">📍 Position, Size & Crop</label>
+            <label className="form-label">Position, Size &amp; Crop</label>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>
               Drag the box to move. Drag <span style={{ color: 'var(--accent-cyan)' }}>cyan handles</span> to resize. Drag <span style={{ color: '#ff6600' }}>orange handles</span> to crop.
             </div>
