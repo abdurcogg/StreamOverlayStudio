@@ -1,8 +1,22 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { triggerMedia } from '../lib/channel';
 
 export default function MediaCard({ config, onEdit, onDelete }) {
   const [triggered, setTriggered] = useState(false);
+  const videoRef = useRef(null);
+
+  const handleMouseEnter = () => {
+    if (videoRef.current) {
+      videoRef.current.play().catch(() => {});
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+  };
 
   const handleTrigger = () => {
     setTriggered(true);
@@ -15,16 +29,20 @@ export default function MediaCard({ config, onEdit, onDelete }) {
       return <div className="no-media">No Media</div>;
     }
     if (config.mediaType === 'video') {
-      return <video src={config.mediaUrl} autoPlay playsInline muted loop style={{ maxWidth: '100%', maxHeight: '100%' }} />;
+      return <video ref={videoRef} src={config.mediaUrl} playsInline muted loop style={{ maxWidth: '100%', maxHeight: '100%' }} />;
     }
     return <img src={config.mediaUrl} alt={config.fileName} />;
   };
 
   return (
-    <div className="media-card">
+    <div
+      className={`media-card ${triggered ? 'triggered' : ''}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       {/* Clickable thumbnail = play trigger */}
       <div
-        className={`preview preview-clickable ${triggered ? 'preview-triggered' : ''}`}
+        className="preview preview-clickable"
         onClick={handleTrigger}
         title="Click to trigger overlay"
       >

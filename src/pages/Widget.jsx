@@ -16,6 +16,13 @@ export default function Widget() {
   const videoRef = useRef(null);
   const sfxRef = useRef(null);
 
+  useEffect(() => {
+    if (activeMedia?.mediaType === 'video' && videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(e => console.error('Video autoplay error:', e));
+    }
+  }, [activeMedia]);
+
   const clearTimers = useCallback(() => {
     if (hideTimerRef.current) {
       clearTimeout(hideTimerRef.current);
@@ -76,10 +83,16 @@ export default function Widget() {
         const config = await getMediaConfigById(data.mediaId);
         if (config) {
           clearTimers();
-          setIsVisible(false);
-          setActiveMedia(null);
-          setAnimClass('');
-          setTimeout(() => showNewMedia(config), 100);
+          
+          if (activeMedia && activeMedia.id === config.id) {
+            // Force re-trigger of same animation by briefly resetting
+            setAnimClass('');
+            requestAnimationFrame(() => {
+              showNewMedia(config);
+            });
+          } else {
+            showNewMedia(config);
+          }
         }
       } else if (data.type === 'HIDE_MEDIA') {
         setActiveMedia(current => {
@@ -158,7 +171,6 @@ export default function Widget() {
       overflow: 'hidden',
     }}>
       <div
-        key={`${activeMedia.id}-${Date.now()}`}
         className={animClass}
         style={{
           position: 'absolute',
