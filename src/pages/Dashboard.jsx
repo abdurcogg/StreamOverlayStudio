@@ -227,6 +227,23 @@ export default function Dashboard() {
         />
       )}
 
+      {/* Footer Credits */}
+      <div className="dashboard-footer">
+        <a href="https://www.instagram.com/abdurcog" target="_blank" rel="noopener noreferrer" className="credit-link">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+            <path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2Zm0 1.5A4.25 4.25 0 0 0 3.5 7.75v8.5A4.25 4.25 0 0 0 7.75 20.5h8.5A4.25 4.25 0 0 0 20.5 16.25v-8.5A4.25 4.25 0 0 0 16.25 3.5h-8.5ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm5.25-2.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z"/>
+          </svg>
+          Made by @abdurcog
+        </a>
+        <span className="credit-divider">•</span>
+        <a href="https://www.instagram.com/kurohiko_id" target="_blank" rel="noopener noreferrer" className="credit-link">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+            <path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2Zm0 1.5A4.25 4.25 0 0 0 3.5 7.75v8.5A4.25 4.25 0 0 0 7.75 20.5h8.5A4.25 4.25 0 0 0 20.5 16.25v-8.5A4.25 4.25 0 0 0 16.25 3.5h-8.5ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm5.25-2.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z"/>
+          </svg>
+          Inspired by @kurohiko_id
+        </a>
+      </div>
+
       {/* Toast */}
       {toast && (
         <div className={`toast ${toast.type}`}>
