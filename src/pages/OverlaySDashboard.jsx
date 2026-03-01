@@ -4,7 +4,7 @@ import { loadMediaConfigs, addMediaConfig, updateMediaConfig, deleteMediaConfig 
 import MediaCard from '../components/MediaCard';
 import MediaConfigModal from '../components/MediaConfigModal';
 
-export default function Dashboard() {
+export default function OverlaySDashboard() {
   const [session, setSession] = useState(null);
   const [loadingText, setLoadingText] = useState('Checking authentication...');
   
@@ -18,7 +18,7 @@ export default function Dashboard() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) {
-        setLoadingText('Loading your media configs...');
+        setLoadingText('Loading your OverlayS configs...');
         fetchConfigs();
       } else {
         setLoadingText('');
@@ -34,7 +34,7 @@ export default function Dashboard() {
   }, []);
 
   const fetchConfigs = async () => {
-    const data = await loadMediaConfigs('reacts');
+    const data = await loadMediaConfigs('overlays');
     setConfigs(data);
     setLoadingText('');
   };
@@ -43,7 +43,7 @@ export default function Dashboard() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin
+        redirectTo: window.location.origin + '/overlays'
       }
     });
     if (error) alert('Error logging in: ' + error.message);
@@ -72,8 +72,8 @@ export default function Dashboard() {
     return (
       <div className="dashboard" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center', background: 'var(--bg-card)', padding: '40px', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-color)' }}>
-          <h1 style={{ fontSize: 24, marginBottom: 16 }}>ReactS Studio</h1>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: 32 }}>Manage your OBS overlays and trigger them from anywhere (like a Stream Deck).</p>
+          <h1 style={{ fontSize: 24, marginBottom: 16 }}>OverlayS Studio</h1>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: 32 }}>Manage your permanent OBS overlays (always active).</p>
           <button className="btn btn-primary" onClick={handleLogin} style={{ padding: '12px 24px', fontSize: 16 }}>
             Sign in with Google
           </button>
@@ -83,7 +83,7 @@ export default function Dashboard() {
   }
 
   // --- MAIN DASHBOARD (Authenticated) ---
-  const widgetUrl = `${window.location.origin}/widget?uid=${session.user.id}`;
+  const widgetUrl = `${window.location.origin}/overlays/widget?uid=${session.user.id}`;
 
   const handleCopy = async () => {
     try {
@@ -109,10 +109,10 @@ export default function Dashboard() {
     try {
       if (editingConfig?.id) {
         await updateMediaConfig(editingConfig.id, formData);
-        showToast('Media updated successfully!');
+        showToast('Overlay updated successfully!');
       } else {
-        await addMediaConfig(formData, 'reacts');
-        showToast('Media added successfully!');
+        await addMediaConfig(formData, 'overlays');
+        showToast('Overlay added successfully!');
       }
       await fetchConfigs();
     } catch (err) {
@@ -124,12 +124,12 @@ export default function Dashboard() {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this media?')) {
+    if (window.confirm('Are you sure you want to delete this overlay?')) {
       setLoadingText('Deleting...');
       try {
         await deleteMediaConfig(id);
         await fetchConfigs();
-        showToast('Media deleted', 'error');
+        showToast('Overlay deleted', 'error');
       } catch (err) {
         showToast('Delete failed: ' + err.message, 'error');
       }
@@ -143,8 +143,8 @@ export default function Dashboard() {
       <div className="dashboard-header">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <h1>ReactS Dashboard</h1>
-            <a href="/overlays" className="btn btn-ghost" style={{ fontSize: '11px', padding: '4px 10px' }}>Go to OverlayS</a>
+            <h1>OverlayS Dashboard</h1>
+            <a href="/" className="btn btn-ghost" style={{ fontSize: '11px', padding: '4px 10px' }}>Go to ReactS</a>
           </div>
           <div className="subtitle">Logged in as {session.user.email} &bull; <button className="btn-ghost" onClick={handleLogout} style={{ border: 'none', cursor: 'pointer', padding: 0 }}>Logout</button></div>
         </div>
@@ -186,7 +186,7 @@ export default function Dashboard() {
             Donate
           </a>
           <button className="btn btn-primary" onClick={() => { setEditingConfig(null); setShowModal(true); }}>
-            Add Media
+            Add Overlay
           </button>
         </div>
       </div>
@@ -199,7 +199,7 @@ export default function Dashboard() {
 
       {/* Widget URL Bar */}
       <div className="widget-url-bar">
-        <div className="label">ReactS Widget URL</div>
+        <div className="label">OverlayS Widget URL</div>
         <div className="url-text">{widgetUrl}</div>
         <button
           className={`btn btn-copy ${copied ? 'copied' : ''}`}
@@ -212,7 +212,7 @@ export default function Dashboard() {
       {/* Media Grid */}
       {configs.length === 0 && !loadingText ? (
         <div className="empty-state">
-          <p>No interactive media configured yet. Click <strong>"Add Media"</strong> to get started!</p>
+          <p>No permanent overlays configured yet. Click <strong>"Add Overlay"</strong> to get started!</p>
         </div>
       ) : null}
 
@@ -228,7 +228,7 @@ export default function Dashboard() {
         {!loadingText && (
           <div className="add-card" onClick={() => { setEditingConfig(null); setShowModal(true); }}>
             <div className="plus-icon">+</div>
-            <span>Add New Media</span>
+            <span>Add New Overlay</span>
           </div>
         )}
       </div>

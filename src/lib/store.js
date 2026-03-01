@@ -41,7 +41,7 @@ async function uploadMedia(userId, base64Url, fileName) {
   return publicData.publicUrl;
 }
 
-export async function loadMediaConfigs() {
+export async function loadMediaConfigs(type = 'reacts') {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
@@ -49,6 +49,7 @@ export async function loadMediaConfigs() {
     .from('media_configs')
     .select('*')
     .eq('user_id', user.id)
+    .eq('type', type)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -56,10 +57,10 @@ export async function loadMediaConfigs() {
     return [];
   }
 
-  return data.map(row => ({ id: row.id, ...row.config }));
+  return data.map(row => ({ id: row.id, type: row.type, ...row.config }));
 }
 
-export async function addMediaConfig(config) {
+export async function addMediaConfig(config, type = 'reacts') {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Not logged in');
 
@@ -75,12 +76,12 @@ export async function addMediaConfig(config) {
 
   const { data, error } = await supabase
     .from('media_configs')
-    .insert([{ user_id: user.id, config: finalConfig }])
+    .insert([{ user_id: user.id, config: finalConfig, type }])
     .select()
     .single();
 
   if (error) throw error;
-  return { id: data.id, ...data.config };
+  return { id: data.id, type: data.type, ...data.config };
 }
 
 export async function updateMediaConfig(id, updates) {

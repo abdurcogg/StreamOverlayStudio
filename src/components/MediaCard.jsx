@@ -36,9 +36,10 @@ export default function MediaCard({ config, onEdit, onDelete }) {
 
   return (
     <div
-      className={`media-card ${triggered ? 'triggered' : ''}`}
+      className={`media-card ${triggered ? 'triggered' : ''} ${config.visible === false ? 'is-hidden' : ''}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      style={{ opacity: config.visible === false ? 0.6 : 1 }}
     >
       {/* Clickable thumbnail = play trigger */}
       <div
@@ -54,12 +55,25 @@ export default function MediaCard({ config, onEdit, onDelete }) {
         )}
       </div>
       <div className="card-body">
-        <div className="card-title" title={config.title || config.fileName}>
-          {config.title || config.fileName}
+        <div className="card-title" title={config.title || config.fileName} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>{config.title || config.fileName}</span>
+          {config.visible === false && (
+            <span style={{ fontSize: '10px', background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: '4px', color: 'var(--text-muted)' }}>Hidden</span>
+          )}
         </div>
         <div className="card-meta">
-          <span>Animation: {config.animationIn}</span>
-          <span>Time: {config.duration}s</span>
+          {config.type === 'overlays' ? (
+            <>
+              {config.text && <span title={config.text}>Text: {config.text.substring(0, 15)}{config.text.length > 15 ? '...' : ''}</span>}
+              <span>Opacity: {config.opacity ?? 100}%</span>
+              <span>Blur: {config.blur || 0}px</span>
+            </>
+          ) : (
+            <>
+              <span>Animation: {config.animationIn}</span>
+              <span>Time: {config.duration}s</span>
+            </>
+          )}
           <span>Scale: {config.scale}%</span>
           {config.sfxUrl && <span>Sound: SFX</span>}
         </div>

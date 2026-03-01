@@ -21,9 +21,16 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
     naturalWidth: 400,
     naturalHeight: 400,
     volume: 80,
-    sfxUrl: '',
-    sfxFileName: '',
     sfxVolume: 80,
+    type: 'reacts', // default
+    visible: true,
+    opacity: 100,
+    blur: 0,
+    brightness: 100,
+    text: '',
+    isScrolling: false,
+    scrollSpeed: 5,
+    scrollDirection: 'left',
     ...config,
   });
 
@@ -136,8 +143,8 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
                   clipPath: `inset(${form.crop?.top || 0}% ${form.crop?.right || 0}% ${form.crop?.bottom || 0}% ${form.crop?.left || 0}%)`
                 }}>
                   {form.mediaType === 'video'
-                    ? <video src={form.mediaUrl} controls muted style={{ maxWidth: '100%', maxHeight: '100%' }} />
-                    : <img src={form.mediaUrl} alt={form.fileName} />
+                    ? <video src={form.mediaUrl} controls muted style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                    : <img src={form.mediaUrl} alt={form.fileName} style={{ objectFit: 'contain' }} />
                   }
                 </div>
               </div>
@@ -170,6 +177,18 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
             </div>
           )}
 
+          {/* Visibility Toggle */}
+          <div className="form-group" style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <label className="form-label" style={{ marginBottom: 0 }}>Visible</label>
+            <input
+              type="checkbox"
+              checked={form.visible !== false}
+              onChange={(e) => update({ visible: e.target.checked })}
+              style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+            />
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Show this overlay in the widget</span>
+          </div>
+
           {/* Title Input */}
           <div className="form-group" style={{ marginTop: '16px' }}>
             <label className="form-label">Media Title</label>
@@ -181,6 +200,78 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
               placeholder="e.g. My Overlay"
             />
           </div>
+
+          {/* CSS Filters (Only for OverlayS) */}
+          {form.type === 'overlays' && (
+            <div className="form-group" style={{ marginTop: '16px', background: 'var(--bg-secondary)', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+              <label className="form-label" style={{ marginBottom: 12 }}>✨ CSS Filters</label>
+              
+              <div className="form-row" style={{ gap: 12, marginBottom: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Opacity ({form.opacity || 100}%)</div>
+                  <input type="range" min="0" max="100" value={form.opacity || 100} onChange={(e) => update({ opacity: Number(e.target.value) })} style={{ width: '100%' }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Blur ({form.blur || 0}px)</div>
+                  <input type="range" min="0" max="20" value={form.blur || 0} onChange={(e) => update({ blur: Number(e.target.value) })} style={{ width: '100%' }} />
+                </div>
+              </div>
+
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Brightness ({form.brightness || 100}%)</div>
+                <input type="range" min="0" max="200" value={form.brightness || 100} onChange={(e) => update({ brightness: Number(e.target.value) })} style={{ width: '100%' }} />
+              </div>
+            </div>
+          )}
+
+          {/* Text Label (Only for OverlayS) */}
+          {form.type === 'overlays' && (
+            <div className="form-group" style={{ marginTop: '16px', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
+              <label className="form-label">Overlay Text Label</label>
+              <input
+                type="text"
+                className="form-input"
+                value={form.text || ''}
+                onChange={(e) => update({ text: e.target.value })}
+                placeholder="Type text to display on overlay..."
+              />
+              
+              {form.text && (
+                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <input
+                      type="checkbox"
+                      checked={form.isScrolling}
+                      onChange={(e) => update({ isScrolling: e.target.checked })}
+                      id="scrollToggle"
+                    />
+                    <label htmlFor="scrollToggle" style={{ fontSize: '12px', cursor: 'pointer' }}>Scrolling Text (Marquee)</label>
+                  </div>
+                  
+                  {form.isScrolling && (
+                    <div className="form-row" style={{ gap: 12 }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Scroll Speed ({form.scrollSpeed})</div>
+                        <input type="range" min="1" max="10" value={form.scrollSpeed || 5} onChange={(e) => update({ scrollSpeed: Number(e.target.value) })} style={{ width: '100%' }} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Direction</div>
+                        <select 
+                          className="form-select" 
+                          value={form.scrollDirection || 'left'} 
+                          onChange={(e) => update({ scrollDirection: e.target.value })}
+                          style={{ fontSize: '11px', padding: '4px' }}
+                        >
+                          <option value="left">Right to Left</option>
+                          <option value="right">Left to Right</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Crop Settings */}
           {form.mediaUrl && (
@@ -263,81 +354,86 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
             )}
           </div>
 
-          {/* Animation Settings */}
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label">Appear Animation</label>
-              <select
-                className="form-select"
-                value={form.animationIn}
-                onChange={(e) => update({ animationIn: e.target.value })}
-              >
-                {ANIMATION_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Disappear Animation</label>
-              <select
-                className="form-select"
-                value={form.animationOut}
-                onChange={(e) => update({ animationOut: e.target.value })}
-              >
-                {ANIMATION_OUT_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Speed Sliders */}
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label">Appear Speed</label>
-              <div className="slider-container">
-                <input
-                  type="range"
-                  min="0.1"
-                  max="3"
-                  step="0.1"
-                  value={form.animationInSpeed}
-                  onChange={(e) => update({ animationInSpeed: parseFloat(e.target.value) })}
-                />
-                <span className="slider-value">{form.animationInSpeed}s</span>
+          {/* Animation & Duration (Only for ReactS) */}
+          {form.type !== 'overlays' && (
+            <>
+              {/* Animation Settings */}
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Appear Animation</label>
+                  <select
+                    className="form-select"
+                    value={form.animationIn}
+                    onChange={(e) => update({ animationIn: e.target.value })}
+                  >
+                    {ANIMATION_OPTIONS.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Disappear Animation</label>
+                  <select
+                    className="form-select"
+                    value={form.animationOut}
+                    onChange={(e) => update({ animationOut: e.target.value })}
+                  >
+                    {ANIMATION_OUT_OPTIONS.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Disappear Speed</label>
-              <div className="slider-container">
-                <input
-                  type="range"
-                  min="0.1"
-                  max="3"
-                  step="0.1"
-                  value={form.animationOutSpeed}
-                  onChange={(e) => update({ animationOutSpeed: parseFloat(e.target.value) })}
-                />
-                <span className="slider-value">{form.animationOutSpeed}s</span>
-              </div>
-            </div>
-          </div>
 
-          {/* Duration */}
-          <div className="form-group">
-            <label className="form-label">Duration / Auto-Hide (seconds)</label>
-            <div className="slider-container">
-              <input
-                type="range"
-                min="1"
-                max="30"
-                step="1"
-                value={form.duration}
-                onChange={(e) => update({ duration: parseInt(e.target.value) })}
-              />
-              <span className="slider-value">{form.duration}s</span>
-            </div>
-          </div>
+              {/* Speed Sliders */}
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Appear Speed</label>
+                  <div className="slider-container">
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="3"
+                      step="0.1"
+                      value={form.animationInSpeed}
+                      onChange={(e) => update({ animationInSpeed: parseFloat(e.target.value) })}
+                    />
+                    <span className="slider-value">{form.animationInSpeed}s</span>
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Disappear Speed</label>
+                  <div className="slider-container">
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="3"
+                      step="0.1"
+                      value={form.animationOutSpeed}
+                      onChange={(e) => update({ animationOutSpeed: parseFloat(e.target.value) })}
+                    />
+                    <span className="slider-value">{form.animationOutSpeed}s</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Duration */}
+              <div className="form-group">
+                <label className="form-label">Duration / Auto-Hide (seconds)</label>
+                <div className="slider-container">
+                  <input
+                    type="range"
+                    min="1"
+                    max="30"
+                    step="1"
+                    value={form.duration}
+                    onChange={(e) => update({ duration: parseInt(e.target.value) })}
+                  />
+                  <span className="slider-value">{form.duration}s</span>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Volume (for video) */}
           {(form.mediaType === 'video') && (
