@@ -16,22 +16,36 @@ export default function Dashboard() {
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session) {
-        setLoadingText('Loading your media configs...');
-        fetchConfigs();
-      } else {
+    const checkAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+        if (session) {
+          setLoadingText('Loading your media configs...');
+          fetchConfigs();
+        } else {
+          setLoadingText('');
+        }
+      } catch (err) {
+        console.error('Auth check error:', err);
         setLoadingText('');
       }
-    });
+    };
+    checkAuth();
+
+    // Fallback: if auth check takes too long, stop showing loading text
+    const timer = setTimeout(() => setLoadingText(''), 3000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) fetchConfigs();
+      else setLoadingText('');
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timer);
+    };
   }, []);
 
   const fetchConfigs = async () => {
@@ -145,7 +159,6 @@ export default function Dashboard() {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <h1>ReactS Dashboard</h1>
-            <a href="/overlays" className="btn btn-ghost" style={{ fontSize: '11px', padding: '4px 10px' }}>Go to OverlayS</a>
           </div>
           <div className="subtitle">Logged in as {session.user.email} &bull; <button className="btn-ghost" onClick={handleLogout} style={{ border: 'none', cursor: 'pointer', padding: 0 }}>Logout</button></div>
         </div>
@@ -234,14 +247,12 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Modal */}
       {showModal && (
         <MediaConfigModal
           config={editingConfig}
           onSave={handleSave}
           onClose={() => { setShowModal(false); setEditingConfig(null); }}
           defaultType="reacts"
-          canvasPreset="youtube"
         />
       )}
 

@@ -62,18 +62,10 @@ export default function MediaCard({ config, onEdit, onDelete }) {
           )}
         </div>
         <div className="card-meta">
-          {config.type === 'overlays' ? (
-            <>
-              {config.text && <span title={config.text}>Text: {config.text.substring(0, 15)}{config.text.length > 15 ? '...' : ''}</span>}
-              <span>Opacity: {config.opacity ?? 100}%</span>
-              <span>Blur: {config.blur || 0}px</span>
-            </>
-          ) : (
-            <>
-              <span>Animation: {config.animationIn}</span>
-              <span>Time: {config.duration}s</span>
-            </>
-          )}
+          <>
+            <span>Animation: {config.animationIn}</span>
+            <span>Time: {config.duration}s</span>
+          </>
           <span>Scale: {config.scale}%</span>
           {config.sfxUrl && <span>Sound: SFX</span>}
         </div>

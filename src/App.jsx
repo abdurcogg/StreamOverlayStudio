@@ -3,9 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { supabase } from './lib/supabase';
 import { isAdmin, getMaintenanceStatus } from './lib/admin';
 import Dashboard from './pages/Dashboard';
-import OverlaySDashboard from './pages/OverlaySDashboard';
 import Widget from './pages/Widget';
-import OverlaySWidget from './pages/OverlaySWidget';
 import MaintenancePage from './pages/MaintenancePage';
 
 function AppRoutes() {
@@ -15,12 +13,16 @@ function AppRoutes() {
 
   useEffect(() => {
     const init = async () => {
-      const status = await getMaintenanceStatus();
-      setMaintenance(status);
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) setUserEmail(user.email);
-      setChecked(true);
+      try {
+        const status = await getMaintenanceStatus();
+        setMaintenance(status);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) setUserEmail(user.email);
+      } catch (err) {
+        console.error('Init Error:', err);
+      } finally {
+        setChecked(true);
+      }
     };
     init();
 
@@ -41,14 +43,10 @@ function AppRoutes() {
     <Routes>
       {/* Widgets always accessible */}
       <Route path="/widget" element={<Widget />} />
-      <Route path="/overlays/widget" element={<OverlaySWidget />} />
 
       {/* Dashboard routes: maintenance check */}
       <Route path="/" element={
         maintenance && !adminBypass ? <MaintenancePage /> : <Dashboard />
-      } />
-      <Route path="/overlays" element={
-        maintenance && !adminBypass ? <MaintenancePage /> : <OverlaySDashboard />
       } />
     </Routes>
   );
