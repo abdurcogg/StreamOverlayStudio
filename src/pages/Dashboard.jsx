@@ -145,9 +145,35 @@ export default function Dashboard() {
           <h1>Stream Overlay Studio</h1>
           <div className="subtitle">Logged in as {session.user.email} &bull; <button className="btn-ghost" onClick={handleLogout} style={{ border: 'none', cursor: 'pointer', padding: 0 }}>Logout</button></div>
         </div>
-        <button className="btn btn-primary" onClick={() => { setEditingConfig(null); setShowModal(true); }}>
-          Add Media
-        </button>
+        <div className="header-actions">
+          {/* Instagram */}
+          <a
+            href="https://www.instagram.com/abdurcog"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-social btn-instagram"
+            title="Follow on Instagram"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+              <path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2Zm0 1.5A4.25 4.25 0 0 0 3.5 7.75v8.5A4.25 4.25 0 0 0 7.75 20.5h8.5A4.25 4.25 0 0 0 20.5 16.25v-8.5A4.25 4.25 0 0 0 16.25 3.5h-8.5ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm5.25-2.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z"/>
+            </svg>
+          </a>
+          {/* Saweria Donate */}
+          <a
+            href="https://saweria.co/abdurcogg"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-donate"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+            Donate
+          </a>
+          <button className="btn btn-primary" onClick={() => { setEditingConfig(null); setShowModal(true); }}>
+            Add Media
+          </button>
+        </div>
       </div>
 
       {loadingText && (

@@ -112,6 +112,66 @@ body {
   margin-top: 4px;
 }
 
+/* Header Actions Group */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Social Icon Button */
+.btn-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.btn-social:hover {
+  transform: translateY(-2px);
+}
+
+.btn-instagram:hover {
+  background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 0 20px rgba(225, 48, 108, 0.4);
+}
+
+/* Donate Button */
+.btn-donate {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  color: #fff !important;
+  text-decoration: none;
+  font-weight: 600;
+  box-shadow: 0 0 15px rgba(255, 107, 107, 0.2);
+}
+
+.btn-donate:hover {
+  box-shadow: 0 0 25px rgba(255, 107, 107, 0.45);
+  transform: translateY(-2px);
+}
+
+.btn-donate svg {
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.25); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.15); }
+  60% { transform: scale(1); }
+}
+
 /* Widget URL Bar */
 .widget-url-bar {
   display: flex;
