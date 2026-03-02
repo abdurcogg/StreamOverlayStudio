@@ -24,6 +24,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
     sfxUrl: '',
     sfxFileName: '',
     sfxVolume: 80,
+    separateSfxDuration: false,
     visible: true,
     ...config,
   });
@@ -234,6 +235,10 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
                 <div style={{ marginTop: 8 }}>
                   <label className="form-label" style={{ marginBottom: 4, fontSize: 11 }}>SFX Volume ({form.sfxVolume || 80}%)</label>
                   <input type="range" min="0" max="100" value={form.sfxVolume || 80} onChange={(e) => update({ sfxVolume: parseInt(e.target.value) })} style={{ width: '100%' }} />
+                </div>
+                <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input type="checkbox" id="separateSfx" checked={form.separateSfxDuration || false} onChange={(e) => update({ separateSfxDuration: e.target.checked })} style={{ width: 16, height: 16, cursor: 'pointer' }} />
+                  <label htmlFor="separateSfx" style={{ fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer' }}>Separate Duration (SFX plays independently, longest wins)</label>
                 </div>
               </div>
             ) : (

@@ -93,6 +93,8 @@ export default function Widget() {
     setAnimClass(`anim-${config.animationIn}`);
     setIsVisible(true);
 
+    // --- SFX playback ---
+    let sfxDurationSec = 0;
     if (config.sfxUrl) {
       try {
         if (sfxRef.current) {
@@ -103,10 +105,25 @@ export default function Widget() {
         sfx.volume = (Number(config.sfxVolume) ?? 80) / 100;
         sfx.play().catch(() => {});
         sfxRef.current = sfx;
+
+        // If separate duration is ON, detect SFX length
+        if (config.separateSfxDuration) {
+          sfx.addEventListener('loadedmetadata', () => {
+            if (sfx.duration && isFinite(sfx.duration)) {
+              sfxDurationSec = sfx.duration;
+            }
+          });
+          // SFX cleans itself up when it ends naturally
+          sfx.addEventListener('ended', () => {
+            sfxRef.current = null;
+          });
+        }
       } catch {}
     }
 
     const durationNum = Number(config.duration);
+    const isSeparate = config.separateSfxDuration && config.sfxUrl;
+
     if (durationNum > 0) {
       console.log(`Setting auto-hide timer for ${durationNum} seconds...`);
       hideTimerRef.current = setTimeout(() => {
@@ -114,14 +131,18 @@ export default function Widget() {
         setAnimClass(`anim-${config.animationOut}`);
 
         const outSpeed = Number(config.animationOutSpeed) || 0.5;
-        // Start audio fade-out over the out-animation duration
-        fadeOutAudio(outSpeed);
+
+        // Only fade out audio with the media if NOT separate
+        if (!isSeparate) {
+          fadeOutAudio(outSpeed);
+        }
 
         outTimerRef.current = setTimeout(() => {
           console.log(`Out-animation finished. Removing media from DOM.`);
           setIsVisible(false);
           setActiveMedia(null);
           setAnimClass('');
+          // If separate, SFX keeps playing in background until it ends naturally
         }, outSpeed * 1000);
       }, durationNum * 1000);
     }
