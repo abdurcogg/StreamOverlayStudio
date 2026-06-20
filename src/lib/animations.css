@@ -1,0 +1,120 @@
+/* ===== ANIMATION KEYFRAMES ===== */
+
+/* --- IN Animations --- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pop {
+  0% { transform: scale(0); opacity: 0; }
+  70% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100vh); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100vh); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideLeft {
+  from { transform: translateX(100vw); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideRight {
+  from { transform: translateX(-100vw); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes bounce {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.3); opacity: 1; }
+  70% { transform: scale(0.9); }
+  85% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes zoomRotate {
+  from { transform: scale(0) rotate(0deg); opacity: 0; }
+  to { transform: scale(1) rotate(360deg); opacity: 1; }
+}
+
+@keyframes flip {
+  from { transform: perspective(600px) rotateY(-90deg); opacity: 0; }
+  to { transform: perspective(600px) rotateY(0deg); opacity: 1; }
+}
+
+/* --- OUT Animations --- */
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes popOut {
+  0% { transform: scale(1); opacity: 1; }
+  30% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+@keyframes slideUpOut {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(-100vh); opacity: 0; }
+}
+
+@keyframes slideDownOut {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(100vh); opacity: 0; }
+}
+
+@keyframes slideLeftOut {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-100vw); opacity: 0; }
+}
+
+@keyframes slideRightOut {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100vw); opacity: 0; }
+}
+
+@keyframes bounceOut {
+  0% { transform: scale(1); opacity: 1; }
+  25% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+@keyframes zoomRotateOut {
+  from { transform: scale(1) rotate(0deg); opacity: 1; }
+  to { transform: scale(0) rotate(-360deg); opacity: 0; }
+}
+
+@keyframes flipOut {
+  from { transform: perspective(600px) rotateY(0deg); opacity: 1; }
+  to { transform: perspective(600px) rotateY(90deg); opacity: 0; }
+}
+
+/* --- Animation Classes --- */
+.anim-fadeIn { animation-name: fadeIn; }
+.anim-pop { animation-name: pop; }
+.anim-slideUp { animation-name: slideUp; }
+.anim-slideDown { animation-name: slideDown; }
+.anim-slideLeft { animation-name: slideLeft; }
+.anim-slideRight { animation-name: slideRight; }
+.anim-bounce { animation-name: bounce; }
+.anim-zoomRotate { animation-name: zoomRotate; }
+.anim-flip { animation-name: flip; }
+
+.anim-fadeOut { animation-name: fadeOut; }
+.anim-popOut { animation-name: popOut; }
+.anim-slideUpOut { animation-name: slideUpOut; }
+.anim-slideDownOut { animation-name: slideDownOut; }
+.anim-slideLeftOut { animation-name: slideLeftOut; }
+.anim-slideRightOut { animation-name: slideRightOut; }
+.anim-bounceOut { animation-name: bounceOut; }
+.anim-zoomRotateOut { animation-name: zoomRotateOut; }
+.anim-flipOut { animation-name: flipOut; }
