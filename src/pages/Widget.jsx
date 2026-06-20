@@ -93,14 +93,16 @@ export default function Widget() {
     setAnimClass(`anim-${config.animationIn}`);
     setIsVisible(true);
 
+    // Always stop previous SFX whenever a new media is triggered
+    if (sfxRef.current) {
+      sfxRef.current.pause();
+      sfxRef.current = null;
+    }
+
     // --- SFX playback ---
     let sfxDurationSec = 0;
     if (config.sfxUrl) {
       try {
-        if (sfxRef.current) {
-          sfxRef.current.pause();
-          sfxRef.current = null;
-        }
         const sfx = new Audio(config.sfxUrl);
         sfx.volume = (Number(config.sfxVolume) ?? 80) / 100;
         sfx.play().catch(() => {});
