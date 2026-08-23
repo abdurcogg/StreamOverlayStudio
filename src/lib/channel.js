@@ -38,14 +38,14 @@ async function getSenderChannel() {
 /**
  * Triggers a media overlay via Supabase Realtime across devices.
  */
-export async function triggerMedia(mediaId) {
+export async function triggerMedia(config) {
   const channel = await getSenderChannel();
   if (!channel) return;
 
   await channel.send({
     type: 'broadcast',
     event: 'TRIGGER_MEDIA',
-    payload: { mediaId, timestamp: Date.now() },
+    payload: { mediaId: config.id, config, timestamp: Date.now() },
   });
 }
 
