@@ -158,7 +158,7 @@ export default function Widget() {
 
     const cleanup = onTrigger(userId, async (data) => {
       if (data.type === 'TRIGGER_MEDIA' && data.mediaId) {
-        const config = await getMediaConfigById(data.mediaId);
+        const config = data.config || await getMediaConfigById(data.mediaId);
         if (config) {
           clearTimers();
           
