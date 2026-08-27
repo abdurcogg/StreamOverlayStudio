@@ -7,6 +7,7 @@ import '../lib/animations.css';
 export default function Widget() {
   const [searchParams] = useSearchParams();
   const userId = searchParams.get('uid');
+  const widgetCategory = searchParams.get('cat') || 'meme'; // 'meme' | 'transition'
 
   const [activeMedia, setActiveMedia] = useState(null);
   const [animClass, setAnimClass] = useState('');
@@ -93,16 +94,14 @@ export default function Widget() {
     setAnimClass(`anim-${config.animationIn}`);
     setIsVisible(true);
 
-    // Always stop previous SFX whenever a new media is triggered
-    if (sfxRef.current) {
-      sfxRef.current.pause();
-      sfxRef.current = null;
-    }
-
     // --- SFX playback ---
     let sfxDurationSec = 0;
     if (config.sfxUrl) {
       try {
+        if (sfxRef.current) {
+          sfxRef.current.pause();
+          sfxRef.current = null;
+        }
         const sfx = new Audio(config.sfxUrl);
         sfx.volume = (Number(config.sfxVolume) ?? 80) / 100;
         sfx.play().catch(() => {});
@@ -158,18 +157,28 @@ export default function Widget() {
 
     const cleanup = onTrigger(userId, async (data) => {
       if (data.type === 'TRIGGER_MEDIA' && data.mediaId) {
-        const config = data.config || await getMediaConfigById(data.mediaId);
+        const config = await getMediaConfigById(data.mediaId);
         if (config) {
+          // Filter by category — default to 'meme' for legacy data without category field
+          const mediaCategory = config.category || 'meme';
+          if (mediaCategory !== widgetCategory) return; // wrong widget, ignore
           clearTimers();
           
-          // Re-trigger/Reset logic: always treat as new to restart animation/audio
+          // Stop any currently playing SFX
+          if (sfxRef.current) {
+            try { sfxRef.current.pause(); } catch {}
+            sfxRef.current = null;
+          }
+          
+          // Reset state completely — must let React commit this unmount
           setIsVisible(false);
           setActiveMedia(null);
           setAnimClass('');
           
-          requestAnimationFrame(() => {
+          // Give React enough time to flush the unmount render before re-mounting
+          setTimeout(() => {
             showNewMedia(config);
-          });
+          }, 60);
         }
       } else if (data.type === 'HIDE_MEDIA') {
         setActiveMedia(current => {
