@@ -192,15 +192,12 @@ export default function Widget() {
             sfxRef.current = null;
           }
           
-          // Reset state completely — must let React commit this unmount
-          setIsVisible(false);
-          setActiveMedia(null);
-          setAnimClass('');
-          
-          // Give React enough time to flush the unmount render before re-mounting
-          setTimeout(() => {
-            showNewMedia(config);
-          }, 60);
+          const spamConfig = {
+            ...config,
+            _triggerId: data.triggerId || (Date.now() + '-' + Math.random().toString(36).substring(2, 7))
+          };
+
+          showNewMedia(spamConfig);
         }
       } else if (data.type === 'HIDE_MEDIA') {
         setActiveMedia(current => {
@@ -282,6 +279,7 @@ export default function Widget() {
       overflow: 'hidden',
     }}>
       <div
+        key={activeMedia?._triggerId || activeMedia?.id}
         className={animClass}
         style={{
           position: 'absolute',
@@ -305,6 +303,7 @@ export default function Widget() {
         }}>
           {activeMedia.mediaType === 'video' ? (
             <video
+              key={activeMedia?._triggerId}
               ref={videoRef}
               src={activeMedia.mediaUrl}
               autoPlay
@@ -317,6 +316,7 @@ export default function Widget() {
             />
           ) : (
             <img
+              key={activeMedia?._triggerId}
               src={activeMedia.mediaUrl}
               alt=""
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
