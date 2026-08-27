@@ -8,6 +8,9 @@ export default function Widget() {
   const [searchParams] = useSearchParams();
   const userId = searchParams.get('uid');
   const widgetCategory = searchParams.get('cat') || 'meme'; // 'meme' | 'transition'
+  // Use ref so async callbacks always see current value without triggering re-subscribe
+  const widgetCategoryRef = useRef(widgetCategory);
+  useEffect(() => { widgetCategoryRef.current = widgetCategory; }, [widgetCategory]);
 
   const [activeMedia, setActiveMedia] = useState(null);
   const [animClass, setAnimClass] = useState('');
@@ -161,7 +164,7 @@ export default function Widget() {
         if (config) {
           // Filter by category — default to 'meme' for legacy data without category field
           const mediaCategory = config.category || 'meme';
-          if (mediaCategory !== widgetCategory) return; // wrong widget, ignore
+          if (mediaCategory !== widgetCategoryRef.current) return; // wrong widget, ignore
           clearTimers();
           
           // Stop any currently playing SFX
