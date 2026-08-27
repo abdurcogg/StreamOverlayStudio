@@ -20,7 +20,7 @@ export default function MediaCard({ config, onEdit, onDelete }) {
 
   const handleTrigger = () => {
     setTriggered(true);
-    triggerMedia(config);
+    triggerMedia(config.id);
     setTimeout(() => setTriggered(false), 1500);
   };
 
@@ -57,9 +57,30 @@ export default function MediaCard({ config, onEdit, onDelete }) {
       <div className="card-body">
         <div className="card-title" title={config.title || config.fileName} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>{config.title || config.fileName}</span>
-          {config.visible === false && (
-            <span style={{ fontSize: '10px', background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: '4px', color: 'var(--text-muted)' }}>Hidden</span>
-          )}
+          <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
+            {/* Category badge */}
+            {(() => {
+              const cat = config.category || 'meme';
+              const isMeme = cat === 'meme';
+              return (
+                <span style={{
+                  fontSize: '10px',
+                  padding: '2px 7px',
+                  borderRadius: '10px',
+                  fontWeight: 600,
+                  letterSpacing: '0.02em',
+                  background: isMeme ? 'rgba(34,197,94,0.18)' : 'rgba(239,68,68,0.18)',
+                  color: isMeme ? '#22c55e' : '#ef4444',
+                  border: `1px solid ${isMeme ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`,
+                }}>
+                  {isMeme ? '● Meme' : '● Transisi'}
+                </span>
+              );
+            })()}
+            {config.visible === false && (
+              <span style={{ fontSize: '10px', background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: '4px', color: 'var(--text-muted)' }}>Hidden</span>
+            )}
+          </div>
         </div>
         <div className="card-meta">
           <>
