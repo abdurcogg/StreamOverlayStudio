@@ -75,7 +75,10 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
 
   const handleSave = () => {
     if (!form.mediaUrl) return;
-    onSave(form);
+    onSave({
+      ...form,
+      category: form.category || 'meme',
+    });
   };
 
   useEffect(() => {
