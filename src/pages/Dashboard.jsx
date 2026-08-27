@@ -1,21 +1,20 @@
-import { useState, useEffect, useCallback, useContext } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { isAdmin } from '../lib/admin';
 import { loadMediaConfigs, addMediaConfig, updateMediaConfig, deleteMediaConfig } from '../lib/store';
 import MediaCard from '../components/MediaCard';
 import MediaConfigModal from '../components/MediaConfigModal';
-import { ThemeContext } from '../App';
 
 export default function Dashboard() {
-  const { theme, toggleTheme } = useContext(ThemeContext);
   const [session, setSession] = useState(null);
   const [loadingText, setLoadingText] = useState('Checking authentication...');
   
   const [configs, setConfigs] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingConfig, setEditingConfig] = useState(null);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState({ meme: false, transition: false });
   const [toast, setToast] = useState(null);
+  const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'meme' | 'transition'
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -100,25 +99,24 @@ export default function Dashboard() {
   }
 
   // --- MAIN DASHBOARD (Authenticated) ---
-  const widgetUrl = `${window.location.origin}/widget?uid=${session.user.id}`;
+  const widgetMemeUrl = `${window.location.origin}/widget?uid=${session.user.id}&cat=meme`;
+  const widgetTransitionUrl = `${window.location.origin}/widget?uid=${session.user.id}&cat=transition`;
 
-  const handleCopy = async () => {
+  const handleCopy = async (cat) => {
+    const url = cat === 'meme' ? widgetMemeUrl : widgetTransitionUrl;
     try {
-      await navigator.clipboard.writeText(widgetUrl);
-      setCopied(true);
-      showToast('Widget URL copied to clipboard!');
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(url);
     } catch {
       const input = document.createElement('input');
-      input.value = widgetUrl;
+      input.value = url;
       document.body.appendChild(input);
       input.select();
       document.execCommand('copy');
       document.body.removeChild(input);
-      setCopied(true);
-      showToast('Widget URL copied!');
-      setTimeout(() => setCopied(false), 2000);
     }
+    setCopied(prev => ({ ...prev, [cat]: true }));
+    showToast(`Widget URL ${cat === 'meme' ? 'Meme' : 'Transisi'} copied!`);
+    setTimeout(() => setCopied(prev => ({ ...prev, [cat]: false })), 2000);
   };
 
   const handleSave = async (formData) => {
@@ -165,10 +163,6 @@ export default function Dashboard() {
           <div className="subtitle">Logged in as {session.user.email} &bull; <button className="btn-ghost" onClick={handleLogout} style={{ border: 'none', cursor: 'pointer', padding: 0 }}>Logout</button></div>
         </div>
         <div className="header-actions">
-          {/* Theme Toggle */}
-          <button className="btn btn-ghost btn-icon" onClick={toggleTheme} title="Toggle Dark/Light Mode" style={{ fontSize: 16 }}>
-            {theme === 'dark' ? '☀️' : '🌙'}
-          </button>
           {/* TikTok */}
           <a
             href="https://www.tiktok.com/@abdurcog"
@@ -217,16 +211,51 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Widget URL Bar */}
-      <div className="widget-url-bar">
-        <div className="label">ReactS Widget URL</div>
-        <div className="url-text">{widgetUrl}</div>
+      {/* Widget URL Bars */}
+      <div className="widget-url-bar" style={{ borderLeft: '3px solid #22c55e' }}>
+        <div className="label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
+          Widget URL — <strong>Meme</strong>
+        </div>
+        <div className="url-text">{widgetMemeUrl}</div>
         <button
-          className={`btn btn-copy ${copied ? 'copied' : ''}`}
-          onClick={handleCopy}
+          className={`btn btn-copy ${copied.meme ? 'copied' : ''}`}
+          onClick={() => handleCopy('meme')}
         >
-          {copied ? 'Copied!' : 'Copy URL'}
+          {copied.meme ? 'Copied!' : 'Copy URL'}
         </button>
+      </div>
+
+      <div className="widget-url-bar" style={{ borderLeft: '3px solid #ef4444', marginTop: 10 }}>
+        <div className="label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: '#ef4444', flexShrink: 0 }} />
+          Widget URL — <strong>Transisi</strong>
+        </div>
+        <div className="url-text">{widgetTransitionUrl}</div>
+        <button
+          className={`btn btn-copy ${copied.transition ? 'copied' : ''}`}
+          onClick={() => handleCopy('transition')}
+        >
+          {copied.transition ? 'Copied!' : 'Copy URL'}
+        </button>
+      </div>
+
+      {/* Category Filter Tabs */}
+      <div style={{ display: 'flex', gap: 8, marginTop: 20, marginBottom: 4 }}>
+        {[
+          { key: 'all', label: 'Semua' },
+          { key: 'meme', label: '🟢 Meme' },
+          { key: 'transition', label: '🔴 Transisi' },
+        ].map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveFilter(tab.key)}
+            className={`btn ${activeFilter === tab.key ? 'btn-primary' : 'btn-ghost'}`}
+            style={{ padding: '6px 16px', fontSize: 13, borderRadius: 20 }}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* Media Grid */}
@@ -237,7 +266,13 @@ export default function Dashboard() {
       ) : null}
 
       <div className="media-grid">
-        {configs.map((config) => (
+        {configs
+          .filter(cfg => {
+            if (activeFilter === 'all') return true;
+            const cat = cfg.category || 'meme';
+            return cat === activeFilter;
+          })
+          .map((config) => (
           <MediaCard
             key={config.id}
             config={config}
