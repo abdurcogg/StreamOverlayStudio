@@ -26,6 +26,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
     sfxVolume: 80,
     separateSfxDuration: false,
     visible: true,
+    category: 'meme', // 'meme' | 'transition'
     ...config,
   });
 
@@ -210,7 +211,7 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
             )}
           </div>
 
-          {/* Visibility & Title */}
+          {/* Visibility, Category & Title */}
           <div className="form-row" style={{ marginTop: 16 }}>
              <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1 }}>
                 <input type="checkbox" checked={form.visible !== false} onChange={(e) => update({ visible: e.target.checked })} style={{ width: 18, height: 18, cursor: 'pointer' }} id="vis" />
@@ -220,6 +221,49 @@ export default function MediaConfigModal({ config, onSave, onClose }) {
                 <label className="form-label">Display Name (Dashboard)</label>
                 <input type="text" className="form-input" value={form.title} onChange={(e) => update({ title: e.target.value })} placeholder="e.g. Meme React" />
              </div>
+          </div>
+
+          {/* Category Selector */}
+          <div className="form-group" style={{ marginTop: 16 }}>
+            <label className="form-label">KATEGORI</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => update({ category: 'meme' })}
+                style={{
+                  flex: 1,
+                  padding: '10px 0',
+                  borderRadius: 8,
+                  border: `2px solid ${(form.category || 'meme') === 'meme' ? '#22c55e' : 'var(--border-color)'}`,
+                  background: (form.category || 'meme') === 'meme' ? 'rgba(34,197,94,0.12)' : 'var(--bg-secondary)',
+                  color: (form.category || 'meme') === 'meme' ? '#22c55e' : 'var(--text-muted)',
+                  fontWeight: 700,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >
+                🟢 Meme
+              </button>
+              <button
+                type="button"
+                onClick={() => update({ category: 'transition' })}
+                style={{
+                  flex: 1,
+                  padding: '10px 0',
+                  borderRadius: 8,
+                  border: `2px solid ${form.category === 'transition' ? '#ef4444' : 'var(--border-color)'}`,
+                  background: form.category === 'transition' ? 'rgba(239,68,68,0.12)' : 'var(--bg-secondary)',
+                  color: form.category === 'transition' ? '#ef4444' : 'var(--text-muted)',
+                  fontWeight: 700,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >
+                🔴 Transisi
+              </button>
+            </div>
           </div>
 
           {/* SFX */}
