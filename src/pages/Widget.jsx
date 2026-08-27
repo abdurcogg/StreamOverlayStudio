@@ -4,13 +4,20 @@ import { onTrigger } from '../lib/channel';
 import { getMediaConfigById } from '../lib/store';
 import '../lib/animations.css';
 
+const normalizeCategory = (cat) => {
+  if (!cat) return 'meme';
+  const c = String(cat).toLowerCase().trim();
+  if (c === 'transition' || c === 'transisi' || c === 'fullscreen') return 'transition';
+  return 'meme';
+};
+
 export default function Widget() {
   const [searchParams] = useSearchParams();
   const userId = searchParams.get('uid');
-  const widgetCategory = searchParams.get('cat') || 'meme'; // 'meme' | 'transition'
+  const catParam = searchParams.get('cat'); // 'meme' | 'transition' | null (all)
   // Use ref so async callbacks always see current value without triggering re-subscribe
-  const widgetCategoryRef = useRef(widgetCategory);
-  useEffect(() => { widgetCategoryRef.current = widgetCategory; }, [widgetCategory]);
+  const widgetCategoryRef = useRef(catParam);
+  useEffect(() => { widgetCategoryRef.current = catParam; }, [catParam]);
 
   const [activeMedia, setActiveMedia] = useState(null);
   const [animClass, setAnimClass] = useState('');
@@ -159,12 +166,23 @@ export default function Widget() {
     }
 
     const cleanup = onTrigger(userId, async (data) => {
-      if (data.type === 'TRIGGER_MEDIA' && data.mediaId) {
-        const config = await getMediaConfigById(data.mediaId);
+      if (data.type === 'TRIGGER_MEDIA') {
+        let config = data.config;
+        if (!config && data.mediaId) {
+          config = await getMediaConfigById(data.mediaId);
+        }
         if (config) {
-          // Filter by category — default to 'meme' for legacy data without category field
-          const mediaCategory = config.category || 'meme';
-          if (mediaCategory !== widgetCategoryRef.current) return; // wrong widget, ignore
+          // Filter by category jika widget URL diset untuk kategori tertentu ('meme' atau 'transition')
+          const filterCat = widgetCategoryRef.current;
+          if (filterCat && filterCat !== 'all') {
+            const expectedCat = normalizeCategory(filterCat);
+            const itemCat = normalizeCategory(config.category);
+            if (expectedCat !== itemCat) {
+              console.log(`[Widget] Ignored: media category '${itemCat}' does not match widget '${expectedCat}'`);
+              return;
+            }
+          }
+
           clearTimers();
           
           // Stop any currently playing SFX
