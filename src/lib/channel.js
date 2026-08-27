@@ -1,51 +1,32 @@
 import { supabase } from './supabase';
 
-let senderChannel = null;
-let subscriptionPromise = null;
-
-async function getSenderChannel() {
-  if (senderChannel) {
-    await subscriptionPromise;
-    return senderChannel;
-  }
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  senderChannel = supabase.channel(`overlay-${user.id}`);
-  
-  subscriptionPromise = new Promise((resolve, reject) => {
-    senderChannel.subscribe((status, err) => {
-      if (status === 'SUBSCRIBED') {
-        resolve();
-      }
-      if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-        senderChannel = null;
-        subscriptionPromise = null;
-        reject(err);
-      }
-    });
-  });
-
-  try {
-    await subscriptionPromise;
-    return senderChannel;
-  } catch (e) {
-    return null;
-  }
-}
-
 /**
  * Triggers a media overlay via Supabase Realtime across devices.
  */
-export async function triggerMedia(config) {
-  const channel = await getSenderChannel();
-  if (!channel) return;
+export async function triggerMedia(mediaIdOrConfig) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
 
-  await channel.send({
-    type: 'broadcast',
-    event: 'TRIGGER_MEDIA',
-    payload: { mediaId: config.id, config, timestamp: Date.now() },
+  const isObject = typeof mediaIdOrConfig === 'object' && mediaIdOrConfig !== null;
+  const mediaId = isObject ? mediaIdOrConfig.id : mediaIdOrConfig;
+  const config = isObject ? mediaIdOrConfig : null;
+
+  const channel = supabase.channel(`overlay-${user.id}`);
+  
+  channel.subscribe(async (status) => {
+    if (status === 'SUBSCRIBED') {
+      await channel.send({
+        type: 'broadcast',
+        event: 'TRIGGER_MEDIA',
+        payload: { mediaId, config, timestamp: Date.now() },
+      });
+      // Berikan delay sebelum removeChannel agar websocket selesai mengirim packet
+      setTimeout(() => {
+        try {
+          supabase.removeChannel(channel);
+        } catch {}
+      }, 1000);
+    }
   });
 }
 
@@ -53,13 +34,20 @@ export async function triggerMedia(config) {
  * Hides active media via Supabase Realtime across devices.
  */
 export async function hideMedia() {
-  const channel = await getSenderChannel();
-  if (!channel) return;
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
 
-  await channel.send({
-    type: 'broadcast',
-    event: 'HIDE_MEDIA',
-    payload: { timestamp: Date.now() },
+  const channel = supabase.channel(`overlay-${user.id}`);
+  
+  await channel.subscribe(async (status) => {
+    if (status === 'SUBSCRIBED') {
+      await channel.send({
+        type: 'broadcast',
+        event: 'HIDE_MEDIA',
+        payload: { timestamp: Date.now() },
+      });
+      supabase.removeChannel(channel);
+    }
   });
 }
 
