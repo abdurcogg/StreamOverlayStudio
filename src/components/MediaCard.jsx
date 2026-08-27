@@ -20,7 +20,7 @@ export default function MediaCard({ config, onEdit, onDelete }) {
 
   const handleTrigger = () => {
     setTriggered(true);
-    triggerMedia(config.id);
+    triggerMedia(config);
     setTimeout(() => setTriggered(false), 1500);
   };
 
