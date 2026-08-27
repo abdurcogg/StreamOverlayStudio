@@ -14,10 +14,13 @@ const normalizeCategory = (cat) => {
 export default function Widget() {
   const [searchParams] = useSearchParams();
   const userId = searchParams.get('uid');
-  const catParam = searchParams.get('cat'); // 'meme' | 'transition' | null (all)
+  const catParam = searchParams.get('cat') || 'meme'; // 'meme' | 'transition'
+  
   // Use ref so async callbacks always see current value without triggering re-subscribe
   const widgetCategoryRef = useRef(catParam);
-  useEffect(() => { widgetCategoryRef.current = catParam; }, [catParam]);
+  useEffect(() => { 
+    widgetCategoryRef.current = searchParams.get('cat') || 'meme'; 
+  }, [searchParams]);
 
   const [activeMedia, setActiveMedia] = useState(null);
   const [animClass, setAnimClass] = useState('');
@@ -172,15 +175,13 @@ export default function Widget() {
           config = await getMediaConfigById(data.mediaId);
         }
         if (config) {
-          // Filter by category jika widget URL diset untuk kategori tertentu ('meme' atau 'transition')
-          const filterCat = widgetCategoryRef.current;
-          if (filterCat && filterCat !== 'all') {
-            const expectedCat = normalizeCategory(filterCat);
-            const itemCat = normalizeCategory(config.category);
-            if (expectedCat !== itemCat) {
-              console.log(`[Widget] Ignored: media category '${itemCat}' does not match widget '${expectedCat}'`);
-              return;
-            }
+          // Strict category separation
+          const expectedCat = normalizeCategory(widgetCategoryRef.current || 'meme');
+          const itemCat = normalizeCategory(config.category);
+
+          // Jika widget adalah meme, abaikan transisi. Jika widget adalah transisi, abaikan meme.
+          if (expectedCat !== itemCat) {
+            return;
           }
 
           clearTimers();
