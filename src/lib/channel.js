@@ -1,7 +1,22 @@
-import { supabase } from './supabase';
+let senderChannel = null;
+let senderUserId = null;
+
+function getSenderChannel(userId) {
+  if (senderChannel && senderUserId === userId) {
+    return senderChannel;
+  }
+  if (senderChannel) {
+    try { supabase.removeChannel(senderChannel); } catch {}
+  }
+  senderUserId = userId;
+  senderChannel = supabase.channel(`overlay-${userId}`);
+  senderChannel.subscribe();
+  return senderChannel;
+}
 
 /**
  * Triggers a media overlay via Supabase Realtime across devices.
+ * Supports rapid spam triggering without reconnect delay.
  */
 export async function triggerMedia(mediaIdOrConfig) {
   const { data: { user } } = await supabase.auth.getUser();
@@ -11,22 +26,17 @@ export async function triggerMedia(mediaIdOrConfig) {
   const mediaId = isObject ? mediaIdOrConfig.id : mediaIdOrConfig;
   const config = isObject ? mediaIdOrConfig : null;
 
-  const channel = supabase.channel(`overlay-${user.id}`);
-  
-  channel.subscribe(async (status) => {
-    if (status === 'SUBSCRIBED') {
-      await channel.send({
-        type: 'broadcast',
-        event: 'TRIGGER_MEDIA',
-        payload: { mediaId, config, timestamp: Date.now() },
-      });
-      // Berikan delay sebelum removeChannel agar websocket selesai mengirim packet
-      setTimeout(() => {
-        try {
-          supabase.removeChannel(channel);
-        } catch {}
-      }, 1000);
-    }
+  const channel = getSenderChannel(user.id);
+
+  channel.send({
+    type: 'broadcast',
+    event: 'TRIGGER_MEDIA',
+    payload: { 
+      mediaId, 
+      config, 
+      timestamp: Date.now(),
+      triggerId: Date.now() + '-' + Math.random().toString(36).substring(2, 7)
+    },
   });
 }
 
