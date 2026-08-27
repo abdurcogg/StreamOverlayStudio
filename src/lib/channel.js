@@ -1,3 +1,5 @@
+import { supabase } from './supabase';
+
 let senderChannel = null;
 let senderUserId = null;
 
